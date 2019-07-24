@@ -218,16 +218,24 @@ async function f_familytree(a_url, a_div_id) {
 			const c_father_x = c_father["x"] + 8 * c_font_size_1;
 			const c_father_y = c_father["y"];
 			//l_paths += "<path d=\"M " + c_father_x + ", " +c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
-			
-			l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			const c_name = c_data[i1]["id"].split("_");
+			if (c_name[0] === "") { //婚姻の表示の暫定処置
+				l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_family_y + "\" />";
+			} else { //通常
+				l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			}
 		}
 		if (c_mother_id !== null) {
 			const c_mother = c_index[c_mother_id];
 			const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
 			const c_mother_y = c_mother["y"];
 			//l_paths += "<path d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
-			
-			l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			const c_name = c_data[i1]["id"].split("_");
+			if (c_name[0] === "") { //婚姻の表示の暫定処置
+				l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_family_y + "\" />";
+			} else { //通常
+				l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			}
 		}
 	}
 	

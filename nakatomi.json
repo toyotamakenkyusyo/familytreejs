@@ -38,6 +38,7 @@
 	{"id": "中臣_形見", "father_id": "中臣_島麿", "mother_id": null, "sex": "male"},
 	{"id": "車持_与志古娘", "father_id": "車持_国子", "mother_id": null, "sex": "female"},
 	{"id": "鏡王女", "father_id": null, "mother_id": null, "sex": "female"},
+	{"id": "__1", "father_id": "中臣_鎌子", "mother_id": "鏡王女", "sex": "male"},
 	{"id": "中臣_真人", "father_id": "中臣_鎌子", "mother_id": "車持_与志古娘", "sex": "male"},
 	{"id": "中臣_史", "father_id": "中臣_鎌子", "mother_id": "車持_与志古娘", "sex": "male"},
 	{"id": "蘇我_娼子", "father_id": "蘇我_連子", "mother_id": null, "sex": "female"},
