@@ -294,6 +294,7 @@ async function f_familytree(a_url, a_div_id) {
 		}
 		l_texts += "<text style=\"font-size: " + c_font_size_1 + "px;\" x=\"" + c_persons[i1]["x"] + "\" y=\"" + c_persons[i1]["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 	}
+	let l_paths = "";
 	//婚姻のみ線
 	for (let i1 = 0; i1 < c_marriages.length; i1++) {
 		const c_father_id = c_marriages[i1]["husband_id"];
@@ -320,7 +321,6 @@ async function f_familytree(a_url, a_div_id) {
 		l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_father_y + "\" />";
 	}
 	//親子線
-	let l_paths = "";
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
 		const c_x = c_persons[i1]["x"];
 		const c_y = c_persons[i1]["y"];
