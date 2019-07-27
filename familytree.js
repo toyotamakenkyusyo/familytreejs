@@ -271,6 +271,7 @@ async function f_familytree(a_url, a_div_id) {
 				l_exist_2 = true;
 				const c_families = c_persons[i1]["families"];
 				for (let i2 = 0; i2 < c_families.length; i2++) {
+				//for (let i2 = c_families.length - 1; i2 >= 0; i2--) { //逆順だと父系が見やすい？
 					c_families[i2]["family_order"] = l_family_order;
 					l_family_order += 1;
 				}
