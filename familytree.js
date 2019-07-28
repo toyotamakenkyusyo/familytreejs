@@ -243,19 +243,50 @@ async function f_familytree(a_url, a_div_id) {
 		}
 	}
 	//世代
-	let l_generation = 0;
-	for (let i1 = 0; i1 < c_tops.length; i1++) {
-		c_index[c_tops[i1]]["generation"] = l_generation;
-		f_generation(c_tops[i1]);
+	let l_exist_3 = true;
+	let l_count = 0;
+	while (l_exist_3 === true && l_count < 100) { //無限ループ注意
+		l_count += 1;
+		l_exist_3 = false;
+		for (let i1 = 0; i1 < c_tops.length; i1++) {
+			c_index[c_tops[i1]]["generation"] = 0;
+			f_generation(c_tops[i1]);
+		}
+		//fatherやmotherがfamilyより右にあるものを探す
+		for (let i1 in c_family_index) {
+			const c_father_id = c_family_index[i1]["father_id"];
+			const c_mother_id = c_family_index[i1]["mother_id"];
+			if (c_mother_id === null || c_father_id === null) {
+				continue; //親が片方なら関係ないのでとばす
+			}
+			const c_family_generation = c_family_index[i1]["generation"];
+			const c_father_generation = c_index[c_father_id]["generation"] + 1;
+			const c_mother_generation = c_index[c_mother_id]["generation"] + 1;
+			//fatherのgenerationとmotherのgenerationのうち、右にある方を使いたい
+			if (c_family_generation <= c_father_generation) {
+				l_exist_3 = true;
+				c_family_index[i1]["generation"] = c_father_generation;
+			}
+			if (c_family_generation <= c_mother_generation) {
+				l_exist_3 = true;
+				c_family_index[i1]["generation"] = c_mother_generation;
+			}
+		}
 	}
 	function f_generation(a_id) {
 		let l_child_generation = c_index[a_id]["generation"] + 1;
 		const c_families = c_index[a_id]["families"];
 		for (let i1 = 0; i1 < c_families.length; i1++) {
-			c_families[i1]["generation"] = l_child_generation;
+			let l_child_generation_2 = l_child_generation;
+			if (c_families[i1]["generation"] !== null) {
+				if (l_child_generation_2 <= c_families[i1]["generation"]) {
+					l_child_generation_2 = c_families[i1]["generation"]; //より大きいgenerationに合わせる
+				}
+			}
+			c_families[i1]["generation"] = l_child_generation_2;
 			for (let i2 = 0; i2 < c_families[i1]["child_ids"].length; i2++) {
 				const c_id = c_families[i1]["child_ids"][i2];
-				c_index[c_id]["generation"] = l_child_generation;
+				c_index[c_id]["generation"] = l_child_generation_2;
 				f_generation(c_id);
 			}
 		}
