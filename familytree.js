@@ -19,10 +19,14 @@ function f_xhr_get(a_url, a_type) {
 
 async function f_familytree(a_url, a_div_id) {
 	//設定
-	const c_row = true; //1行に1人のみの場合true
+	const c_settings = {
+		"one_per_row": true, //1行あたり1人のみ表示の場合true
+		"standard_parent": "father" //表示は父系基準とする
+	};
 	
-	
+	//読み込み
 	const c_data = JSON.parse((await f_xhr_get(a_url, "text")).responseText);
+	//分類
 	const c_persons = [];
 	const c_marriages = [];
 	const c_adoptions = [];
@@ -35,8 +39,6 @@ async function f_familytree(a_url, a_div_id) {
 			c_adoptions.push(c_data[i1]);
 		}
 	}
-	//まずは最小限の構成とする
-	//入力はid, father_id, mother_idのみ
 	
 	//undefinedをnullにそろえる
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
@@ -63,25 +65,26 @@ async function f_familytree(a_url, a_div_id) {
 			c_adoptions[i1]["mother_id"] = null;
 		}
 	}
+	
 	//インデックスを作る
-	const c_index = {};
+	const c_person_index = {};
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
-		c_index[c_persons[i1]["id"]] = c_persons[i1];
+		c_person_index[c_persons[i1]["id"]] = c_persons[i1];
 	}
 	//先に見つからないidをすべて加えておく
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
 		const c_father_id = c_persons[i1]["father_id"];
 		const c_mother_id = c_persons[i1]["mother_id"];
 		if (c_father_id !== null) { //探す場合
-			if (c_index[c_father_id] === undefined) { //見つからない場合、加える
+			if (c_person_index[c_father_id] === undefined) { //見つからない場合、加える
 				c_persons.push({"id": c_father_id, "father_id": null, "mother_id": null});
-				c_index[c_father_id] = c_persons[c_persons.length - 1];
+				c_person_index[c_father_id] = c_persons[c_persons.length - 1];
 			}
 		}
 		if (c_mother_id !== null) { //探す場合
-			if (c_index[c_mother_id] === undefined) { //見つからない場合、加える
+			if (c_person_index[c_mother_id] === undefined) { //見つからない場合、加える
 				c_persons.push({"id": c_mother_id, "father_id": null, "mother_id": null});
-				c_index[c_mother_id] = c_persons[c_persons.length - 1];
+				c_person_index[c_mother_id] = c_persons[c_persons.length - 1];
 			}
 		}
 	}
@@ -89,15 +92,15 @@ async function f_familytree(a_url, a_div_id) {
 		const c_father_id = c_marriages[i1]["husband_id"];
 		const c_mother_id = c_marriages[i1]["wife_id"];
 		if (c_father_id !== null) { //探す場合
-			if (c_index[c_father_id] === undefined) { //見つからない場合、加える
+			if (c_person_index[c_father_id] === undefined) { //見つからない場合、加える
 				c_persons.push({"id": c_father_id, "father_id": null, "mother_id": null});
-				c_index[c_father_id] = c_persons[c_persons.length - 1];
+				c_person_index[c_father_id] = c_persons[c_persons.length - 1];
 			}
 		}
 		if (c_mother_id !== null) { //探す場合
-			if (c_index[c_mother_id] === undefined) { //見つからない場合、加える
+			if (c_person_index[c_mother_id] === undefined) { //見つからない場合、加える
 				c_persons.push({"id": c_mother_id, "father_id": null, "mother_id": null});
-				c_index[c_mother_id] = c_persons[c_persons.length - 1];
+				c_person_index[c_mother_id] = c_persons[c_persons.length - 1];
 			}
 		}
 	}
@@ -105,48 +108,54 @@ async function f_familytree(a_url, a_div_id) {
 		const c_father_id = c_adoptions[i1]["father_id"];
 		const c_mother_id = c_adoptions[i1]["mother_id"];
 		if (c_father_id !== null) { //探す場合
-			if (c_index[c_father_id] === undefined) { //見つからない場合、加える
+			if (c_person_index[c_father_id] === undefined) { //見つからない場合、加える
 				c_persons.push({"id": c_father_id, "father_id": null, "mother_id": null});
-				c_index[c_father_id] = c_persons[c_persons.length - 1];
+				c_person_index[c_father_id] = c_persons[c_persons.length - 1];
 			}
 		}
 		if (c_mother_id !== null) { //探す場合
-			if (c_index[c_mother_id] === undefined) { //見つからない場合、加える
+			if (c_person_index[c_mother_id] === undefined) { //見つからない場合、加える
 				c_persons.push({"id": c_mother_id, "father_id": null, "mother_id": null});
-				c_index[c_mother_id] = c_persons[c_persons.length - 1];
+				c_person_index[c_mother_id] = c_persons[c_persons.length - 1];
 			}
 		}
 	}
-	//familiesを作る
-	//familyはfatherとmotherの組により定まる
-	//構造は人-family-人
+	
+	//groupsを作る（子のidを集めたものがgroup）
+	//groupはfatherとmotherの組により定まる
+	//構造は人-group-人
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
-		c_persons[i1]["families"] = [];
+		c_persons[i1]["groups"] = [];
 		c_persons[i1]["width"] = null;
 	}
-	const c_family_index = {};
-	const c_tops = [];
+	const c_group_index = {};
+	const c_top_persons = [];
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
 		const c_id = c_persons[i1]["id"];
 		const c_father_id = c_persons[i1]["father_id"];
 		const c_mother_id = c_persons[i1]["mother_id"];
 		if (c_father_id === null && c_mother_id === null) { //一番はじめ
-			c_tops.push(c_id);
+			c_top_persons.push(c_id);
 			continue;
 		}
-		const c_family_id = "family_" + c_father_id + "_" + c_mother_id;
-		let l_family = c_family_index[c_family_id];
-		if (l_family === undefined) { //ない場合、加える
-			let l_parent_id = c_father_id; //仮に父系
+		const c_group_id = "group_" + c_father_id + "_" + c_mother_id;
+		let l_group = c_group_index[c_group_id];
+		if (l_group === undefined) { //ない場合、加える
+			let l_parent_id = null;
+			if (c_settings["standard_parent"] === "father") {
+				l_parent_id = c_father_id;
+			} else if (c_settings["standard_parent"] === "mother") {
+				l_parent_id = c_mother_id;
+			}
 			if (l_parent_id === null) {
 				l_parent_id = c_mother_id;
 			}
-			const c_families = c_index[l_parent_id]["families"];
-			c_families.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
-			c_family_index[c_family_id] = c_families[c_families.length - 1];
-			l_family = c_family_index[c_family_id];
+			const c_groups = c_person_index[l_parent_id]["groups"];
+			c_groups.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
+			c_group_index[c_group_id] = c_groups[c_groups.length - 1];
+			l_group = c_group_index[c_group_id];
 		}
-		l_family["child_ids"].push(c_id);
+		l_group["child_ids"].push(c_id);
 	}
 	//婚姻用
 	for (let i1 = 0; i1 < c_marriages.length; i1++) {
@@ -155,188 +164,183 @@ async function f_familytree(a_url, a_div_id) {
 		if (c_father_id === null || c_mother_id === null) { //片方ない
 			continue;
 		}
-		const c_family_id = "family_" + c_father_id + "_" + c_mother_id;
-		let l_family = c_family_index[c_family_id];
-		if (l_family === undefined) { //ない場合、加える
-			let l_parent_id = c_father_id; //仮に父系
+		const c_group_id = "group_" + c_father_id + "_" + c_mother_id;
+		let l_group = c_group_index[c_group_id];
+		if (l_group === undefined) { //ない場合、加える
+			let l_parent_id = null;
+			if (c_settings["standard_parent"] === "father") {
+				l_parent_id = c_father_id;
+			} else if (c_settings["standard_parent"] === "mother") {
+				l_parent_id = c_mother_id;
+			}
 			if (l_parent_id === null) {
 				l_parent_id = c_mother_id;
 			}
-			const c_families = c_index[l_parent_id]["families"];
-			c_families.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
-			c_family_index[c_family_id] = c_families[c_families.length - 1];
-			l_family = c_family_index[c_family_id];
+			const c_groups = c_person_index[l_parent_id]["groups"];
+			c_groups.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
+			c_group_index[c_group_id] = c_groups[c_groups.length - 1];
+			l_group = c_group_index[c_group_id];
 		}
-		l_family["marriage"] = true;
+		l_group["marriage"] = true;
 	}
 	//養子用
 	for (let i1 = 0; i1 < c_adoptions.length; i1++) {
 		const c_father_id = c_adoptions[i1]["father_id"];
 		const c_mother_id = c_adoptions[i1]["mother_id"];
-		const c_family_id = "family_" + c_father_id + "_" + c_mother_id;
-		let l_family = c_family_index[c_family_id];
-		if (l_family === undefined) { //ない場合、加える
-			let l_parent_id = c_father_id; //仮に父系
+		const c_group_id = "group_" + c_father_id + "_" + c_mother_id;
+		let l_group = c_group_index[c_group_id];
+		if (l_group === undefined) { //ない場合、加える
+			let l_parent_id = null;
+			if (c_settings["standard_parent"] === "father") {
+				l_parent_id = c_father_id;
+			} else if (c_settings["standard_parent"] === "mother") {
+				l_parent_id = c_mother_id;
+			}
 			if (l_parent_id === null) {
 				l_parent_id = c_mother_id;
 			}
-			const c_families = c_index[l_parent_id]["families"];
-			c_families.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
-			c_family_index[c_family_id] = c_families[c_families.length - 1];
-			l_family = c_family_index[c_family_id];
+			const c_groups = c_person_index[l_parent_id]["groups"];
+			c_groups.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
+			c_group_index[c_group_id] = c_groups[c_groups.length - 1];
+			l_group = c_group_index[c_group_id];
 		}
 	}
+	
 	//幅を数える
 	let l_exist = true; //抜けがあるときtrue
 	while (l_exist === true) {
 		l_exist = false;
 		for (let i1 = 0; i1 < c_persons.length; i1++) {
-			const c_families = c_persons[i1]["families"];
+			const c_groups = c_persons[i1]["groups"];
 			//childのwidth
-			for (let i2 = 0; i2 < c_families.length; i2++) {
-				let l_family_width = 0;
-				for (let i3 = 0; i3 < c_families[i2]["child_ids"].length; i3++) {
-					const c_id = c_families[i2]["child_ids"][i3];
-					const c_child_width = c_index[c_id]["width"];
+			for (let i2 = 0; i2 < c_groups.length; i2++) {
+				let l_group_width = 0;
+				for (let i3 = 0; i3 < c_groups[i2]["child_ids"].length; i3++) {
+					const c_id = c_groups[i2]["child_ids"][i3];
+					const c_child_width = c_person_index[c_id]["width"];
 					if (c_child_width === null) {
-						l_family_width = null;
+						l_group_width = null;
 						l_exist = true;
 						break;
 					}
-					l_family_width += c_child_width;
+					l_group_width += c_child_width;
 				}
-				c_families[i2]["width"] = l_family_width;
+				c_groups[i2]["width"] = l_group_width;
 			}
 			//familyのwidth
 			let l_width = 0;
-			for (let i2 = 0; i2 < c_families.length; i2++) {
-				const c_family_width = c_families[i2]["width"];
-				if (c_family_width === null) {
+			for (let i2 = 0; i2 < c_groups.length; i2++) {
+				const c_group_width = c_groups[i2]["width"];
+				if (c_group_width === null) {
 					l_width = null;
 					l_exist = true;
 					break;
 				}
-				l_width += c_family_width;
+				l_width += c_group_width;
 			}
 			if (l_width === 0) {
 				l_width = 1; //0人でも親の分を確保する
-			} else if (c_row === true && l_width !== null) {
+			} else if (c_settings["one_per_row"] === true && l_width !== null) {
 				l_width += 1;
 			}
 			c_persons[i1]["width"] = l_width;
 		}
 	}
+	
 	//順序
 	let l_order = 0;
-	for (let i1 = 0; i1 < c_tops.length; i1++) {
-		c_index[c_tops[i1]]["order"] = l_order;
-		f_order(c_tops[i1]);
-		l_order += c_index[c_tops[i1]]["width"];
+	for (let i1 = 0; i1 < c_top_persons.length; i1++) {
+		c_person_index[c_top_persons[i1]]["order"] = l_order;
+		f_order(c_top_persons[i1]);
+		l_order += c_person_index[c_top_persons[i1]]["width"];
 	}
 	function f_order(a_id) {
-		let l_family_order = c_index[a_id]["order"];
-		const c_families = c_index[a_id]["families"];
-		for (let i1 = 0; i1 < c_families.length; i1++) {
-			c_families[i1]["order"] = l_family_order;
-			let l_child_order = l_family_order;
-			if (c_row === true) {
+		let l_group_order = c_person_index[a_id]["order"];
+		const c_groups = c_person_index[a_id]["groups"];
+		for (let i1 = 0; i1 < c_groups.length; i1++) {
+			c_groups[i1]["order"] = l_group_order;
+			let l_child_order = l_group_order;
+			if (c_settings["one_per_row"] === true) {
 				l_child_order += 1;
 			}
-			for (let i2 = 0; i2 < c_families[i1]["child_ids"].length; i2++) {
-				const c_id = c_families[i1]["child_ids"][i2];
-				c_index[c_id]["order"] = l_child_order;
+			for (let i2 = 0; i2 < c_groups[i1]["child_ids"].length; i2++) {
+				const c_id = c_groups[i1]["child_ids"][i2];
+				c_person_index[c_id]["order"] = l_child_order;
 				f_order(c_id);
-				l_child_order += c_index[c_id]["width"];
+				l_child_order += c_person_index[c_id]["width"];
 			}
-			l_family_order += c_families[i1]["width"];
+			l_group_order += c_groups[i1]["width"];
 		}
 	}
+	
 	//世代
-	let l_exist_3 = true;
+	for (let i1 = 0; i1 < c_persons.length; i1++) {
+		c_persons[i1]["generation"] = null;
+	}
+	for (let i1 = 0; i1 < c_top_persons.length; i1++) {
+		c_person_index[c_top_persons[i1]]["generation"] = 0; //最初
+	}
+	let l_exist_2 = true;
 	let l_count = 0;
-	while (l_exist_3 === true && l_count < 100) { //無限ループ注意
-		l_count += 1;
-		l_exist_3 = false;
-		for (let i1 = 0; i1 < c_tops.length; i1++) {
-			c_index[c_tops[i1]]["generation"] = 0;
-			f_generation(c_tops[i1]);
-		}
-		//fatherやmotherがfamilyより右にあるものを探す
-		for (let i1 in c_family_index) {
-			const c_father_id = c_family_index[i1]["father_id"];
-			const c_mother_id = c_family_index[i1]["mother_id"];
-			if (c_mother_id === null || c_father_id === null) {
-				continue; //親が片方なら関係ないのでとばす
-			}
-			const c_family_generation = c_family_index[i1]["generation"];
-			const c_father_generation = c_index[c_father_id]["generation"] + 1;
-			const c_mother_generation = c_index[c_mother_id]["generation"] + 1;
-			//fatherのgenerationとmotherのgenerationのうち、右にある方を使いたい
-			if (c_family_generation <= c_father_generation) {
-				l_exist_3 = true;
-				c_family_index[i1]["generation"] = c_father_generation;
-			}
-			if (c_family_generation <= c_mother_generation) {
-				l_exist_3 = true;
-				c_family_index[i1]["generation"] = c_mother_generation;
-			}
-		}
-	}
-	function f_generation(a_id) {
-		let l_child_generation = c_index[a_id]["generation"] + 1;
-		const c_families = c_index[a_id]["families"];
-		for (let i1 = 0; i1 < c_families.length; i1++) {
-			let l_child_generation_2 = l_child_generation;
-			if (c_families[i1]["generation"] !== null) {
-				if (l_child_generation_2 <= c_families[i1]["generation"]) {
-					l_child_generation_2 = c_families[i1]["generation"]; //より大きいgenerationに合わせる
-				}
-			}
-			c_families[i1]["generation"] = l_child_generation_2;
-			for (let i2 = 0; i2 < c_families[i1]["child_ids"].length; i2++) {
-				const c_id = c_families[i1]["child_ids"][i2];
-				c_index[c_id]["generation"] = l_child_generation_2;
-				f_generation(c_id);
-			}
-		}
-	}
-	//familyの線の順序（family_order）
-	let l_family_order = 0;
-	let l_generation_2 = 0;
-	/*
-	//この方式は線の重複が生じる。generationがfamilyごとになっていない
-	let l_exist_2 = true; //その世代が存在
-	while (l_exist_2 === true) {
+	while (l_exist_2 === true && l_count < 100) { //無限ループ注意
 		l_exist_2 = false;
+		l_count += 1;
 		for (let i1 = 0; i1 < c_persons.length; i1++) {
-			if (c_persons[i1]["generation"] === l_generation_2) {
-				l_exist_2 = true;
-				const c_families = c_persons[i1]["families"];
-				for (let i2 = 0; i2 < c_families.length; i2++) {
-				//for (let i2 = c_families.length - 1; i2 >= 0; i2--) { //逆順だと父系が見やすい？
-					c_families[i2]["family_order"] = l_family_order;
-					l_family_order += 1;
+			const c_groups = c_persons[i1]["groups"];
+			for (let i2 = 0; i2 < c_groups.length; i2++) {
+				const c_father_id = c_groups[i2]["father_id"];
+				const c_mother_id = c_groups[i2]["mother_id"];
+				let l_parent_generation = null;
+				if (c_father_id !== null) {
+					const c_father_generation = c_person_index[c_father_id]["generation"];
+					if (c_father_generation === null) {
+						l_exist_2 = true;
+						continue;
+					} else {
+						l_parent_generation = c_father_generation;
+					}
+				}
+				if (c_mother_id !== null) {
+					const c_mother_generation = c_person_index[c_mother_id]["generation"];
+					if (c_mother_generation === null) {
+						l_exist_2 = true;
+						continue;
+					} else if (l_parent_generation < c_mother_generation) {
+						l_parent_generation = c_mother_generation;
+					}
+				}
+				c_groups[i2]["generation"] = l_parent_generation + 1;
+				for (let i3 = 0; i3 < c_groups[i2]["child_ids"].length; i3++) {
+					const c_child_id = c_groups[i2]["child_ids"][i3];
+					c_person_index[c_child_id]["generation"] = l_parent_generation + 1;
 				}
 			}
 		}
-		l_generation_2 += 1;
-		l_family_order = 0;
 	}
-	*/
-	while (l_generation_2 < 20) {
-		for (let i1 = 0; i1 < c_persons.length; i1++) {
-			const c_families = c_persons[i1]["families"];
-			for (let i2 = 0; i2 < c_families.length; i2++) {
-				if (c_families[i2]["generation"] === l_generation_2) {
-					l_exist_2 = true;
-					c_families[i2]["family_order"] = l_family_order;
-					l_family_order += 1;
+	
+	//最大世代
+	let l_max_generation = 0;
+	for (let i1 = 0; i1 < c_persons.length; i1++) {
+		if (l_max_generation < c_persons[i1]["generation"]) {
+			l_max_generation = c_persons[i1]["generation"];
+		}
+	}
+	
+	//groupの線の順序（group_line_order）
+	let l_group_line_order = 0;
+	for (let i1 = 0; i1 <= l_max_generation; i1++) {
+		l_group_line_order = 0;
+		for (let i2 = 0; i2 < c_persons.length; i2++) {
+			const c_groups = c_persons[i2]["groups"];
+			for (let i3 = 0; i3 < c_groups.length; i3++) {
+				if (c_groups[i3]["generation"] === i1) {
+					c_groups[i3]["group_line_order"] = l_group_line_order;
+					l_group_line_order += 1;
 				}
 			}
 		}
-		l_generation_2 += 1;
-		l_family_order = 0;
 	}
+	
 	//位置の計算
 	const c_font_size_1 = 16;
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
@@ -360,23 +364,23 @@ async function f_familytree(a_url, a_div_id) {
 		if (c_father_id === null && c_mother_id === null) {
 			continue;
 		}
-		const c_family_id = "family_" + c_father_id + "_" + c_mother_id;
-		const c_family = c_family_index[c_family_id];
-		if (c_family === undefined) {
+		const c_group_id = "group_" + c_father_id + "_" + c_mother_id;
+		const c_group = c_group_index[c_group_id];
+		if (c_group === undefined) {
 			continue;
 		}
-		const c_generation = c_family["generation"] - 1;
-		const c_family_order = c_family["family_order"];
-		const c_family_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_family_order * 4;
+		const c_generation = c_group["generation"] - 1;
+		const c_group_line_order = c_group["group_line_order"];
+		const c_group_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_group_line_order * 4;
 		//
-		const c_father = c_index[c_father_id];
+		const c_father = c_person_index[c_father_id];
 		const c_father_x = c_father["x"] + 8 * c_font_size_1;
 		const c_father_y = c_father["y"];
-		const c_mother = c_index[c_mother_id];
+		const c_mother = c_person_index[c_mother_id];
 		const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
 		const c_mother_y = c_mother["y"];
-		l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_mother_y + "\" />";
-		l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_father_y + "\" />";
+		l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
+		l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
 	}
 	//親子線
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
@@ -385,57 +389,57 @@ async function f_familytree(a_url, a_div_id) {
 		const c_generation = c_persons[i1]["generation"] - 1;
 		const c_father_id = c_persons[i1]["father_id"];
 		const c_mother_id = c_persons[i1]["mother_id"];
-		const c_family_id = "family_" + c_father_id + "_" + c_mother_id;
-		const c_family = c_family_index[c_family_id];
-		if (c_family === undefined) {
+		const c_group_id = "group_" + c_father_id + "_" + c_mother_id;
+		const c_group = c_group_index[c_group_id];
+		if (c_group === undefined) {
 			continue;
 		}
-		const c_family_order = c_family["family_order"];
-		const c_family_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_family_order * 4;
+		const c_group_line_order = c_group["group_line_order"];
+		const c_group_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_group_line_order * 4;
 		//一番最初の人
-		const c_person_id = c_family["child_ids"][0];
-		const c_family_y = c_index[c_person_id]["y"] + c_font_size_1;
+		const c_person_id = c_group["child_ids"][0];
+		const c_group_y = c_person_index[c_person_id]["y"] + c_font_size_1;
 		//兄弟姉妹の線のx
 		const c_sibling_x = c_x - c_font_size_1;
 		if (c_father_id !== null) {
-			const c_father = c_index[c_father_id];
+			const c_father = c_person_index[c_father_id];
 			const c_father_x = c_father["x"] + 8 * c_font_size_1;
 			const c_father_y = c_father["y"];
-			l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 		}
 		if (c_mother_id !== null) {
-			const c_mother = c_index[c_mother_id];
+			const c_mother = c_person_index[c_mother_id];
 			const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
 			const c_mother_y = c_mother["y"];
-			l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_family_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 
 		}
 	}
 	//養子線
 	for (let i1 = 0; i1 < c_adoptions.length; i1++) {
-		const c_x = c_index[c_adoptions[i1]["id"]]["x"];
-		const c_y = c_index[c_adoptions[i1]["id"]]["y"];
+		const c_x = c_person_index[c_adoptions[i1]["id"]]["x"];
+		const c_y = c_person_index[c_adoptions[i1]["id"]]["y"];
 		const c_father_id = c_adoptions[i1]["father_id"];
 		const c_mother_id = c_adoptions[i1]["mother_id"];
-		const c_family_id = "family_" + c_father_id + "_" + c_mother_id;
-		const c_family = c_family_index[c_family_id];
-		if (c_family === undefined) {
+		const c_group_id = "group_" + c_father_id + "_" + c_mother_id;
+		const c_group = c_group_index[c_group_id];
+		if (c_group === undefined) {
 			continue;
 		}
-		const c_generation = c_family["generation"] - 1;
-		const c_family_order = c_family["family_order"];
-		const c_family_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_family_order * 4;
+		const c_generation = c_group["generation"] - 1;
+		const c_group_line_order = c_group["group_line_order"];
+		const c_group_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_group_line_order * 4;
 		if (c_father_id !== null) {
-			const c_father = c_index[c_father_id];
+			const c_father = c_person_index[c_father_id];
 			const c_father_x = c_father["x"] + 8 * c_font_size_1;
 			const c_father_y = c_father["y"];
-			l_paths += "<path style=\"stroke: #0000FF; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_family_x +  ", " + c_father_y + " L " + c_family_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			l_paths += "<path style=\"stroke: #0000FF; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 		}
 		if (c_mother_id !== null) {
-			const c_mother = c_index[c_mother_id];
+			const c_mother = c_person_index[c_mother_id];
 			const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
 			const c_mother_y = c_mother["y"];
-			l_paths += "<path style=\"stroke: #FF0000; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_family_x +  ", " + c_mother_y + " L " + c_family_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			l_paths += "<path style=\"stroke: #FF0000; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 
 		}
 	}
