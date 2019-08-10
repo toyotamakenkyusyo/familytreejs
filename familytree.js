@@ -303,6 +303,8 @@ async function f_familytree(a_url, a_div_id) {
 	//familyの線の順序（family_order）
 	let l_family_order = 0;
 	let l_generation_2 = 0;
+	/*
+	//この方式は線の重複が生じる。generationがfamilyごとになっていない
 	let l_exist_2 = true; //その世代が存在
 	while (l_exist_2 === true) {
 		l_exist_2 = false;
@@ -312,6 +314,21 @@ async function f_familytree(a_url, a_div_id) {
 				const c_families = c_persons[i1]["families"];
 				for (let i2 = 0; i2 < c_families.length; i2++) {
 				//for (let i2 = c_families.length - 1; i2 >= 0; i2--) { //逆順だと父系が見やすい？
+					c_families[i2]["family_order"] = l_family_order;
+					l_family_order += 1;
+				}
+			}
+		}
+		l_generation_2 += 1;
+		l_family_order = 0;
+	}
+	*/
+	while (l_generation_2 < 20) {
+		for (let i1 = 0; i1 < c_persons.length; i1++) {
+			const c_families = c_persons[i1]["families"];
+			for (let i2 = 0; i2 < c_families.length; i2++) {
+				if (c_families[i2]["generation"] === l_generation_2) {
+					l_exist_2 = true;
 					c_families[i2]["family_order"] = l_family_order;
 					l_family_order += 1;
 				}
