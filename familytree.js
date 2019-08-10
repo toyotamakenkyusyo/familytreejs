@@ -18,6 +18,10 @@ function f_xhr_get(a_url, a_type) {
 }
 
 async function f_familytree(a_url, a_div_id) {
+	//設定
+	const c_row = true; //1行に1人のみの場合true
+	
+	
 	const c_data = JSON.parse((await f_xhr_get(a_url, "text")).responseText);
 	const c_persons = [];
 	const c_marriages = [];
@@ -216,6 +220,8 @@ async function f_familytree(a_url, a_div_id) {
 			}
 			if (l_width === 0) {
 				l_width = 1; //0人でも親の分を確保する
+			} else if (c_row === true && l_width !== null) {
+				l_width += 1;
 			}
 			c_persons[i1]["width"] = l_width;
 		}
@@ -233,6 +239,9 @@ async function f_familytree(a_url, a_div_id) {
 		for (let i1 = 0; i1 < c_families.length; i1++) {
 			c_families[i1]["order"] = l_family_order;
 			let l_child_order = l_family_order;
+			if (c_row === true) {
+				l_child_order += 1;
+			}
 			for (let i2 = 0; i2 < c_families[i1]["child_ids"].length; i2++) {
 				const c_id = c_families[i1]["child_ids"][i2];
 				c_index[c_id]["order"] = l_child_order;
