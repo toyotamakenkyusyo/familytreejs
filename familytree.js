@@ -342,10 +342,14 @@ async function f_familytree(a_url, a_div_id) {
 	}
 	
 	//位置の計算
-	const c_font_size_1 = 16;
+	c_settings["font_size"] = 16; //フォントサイズ
+	c_settings["line_height"] = 1.25; //文字の縦の間隔
+	c_settings["line_space"] = 6; //線の間隔
+	c_settings["text_length"] = 8; //想定する最大文字数
+	c_settings["length"] = 16; //横の間隔（文字数で表記）
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
-		c_persons[i1]["x"] = c_persons[i1]["generation"] * 16 * c_font_size_1;
-		c_persons[i1]["y"] = c_persons[i1]["order"] * 2 * c_font_size_1 + 32;
+		c_persons[i1]["x"] = c_persons[i1]["generation"] * c_settings["length"] * c_settings["font_size"];
+		c_persons[i1]["y"] = c_persons[i1]["order"] * c_settings["line_height"] * c_settings["font_size"] + 32;
 	}
 	//テキスト
 	let l_texts = "";
@@ -354,7 +358,7 @@ async function f_familytree(a_url, a_div_id) {
 		if (c_name[1] === undefined) {
 			c_name[1] = "";
 		}
-		l_texts += "<text style=\"font-size: " + c_font_size_1 + "px;\" x=\"" + c_persons[i1]["x"] + "\" y=\"" + c_persons[i1]["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
+		l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_persons[i1]["x"] + "\" y=\"" + c_persons[i1]["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 	}
 	let l_paths = "";
 	//婚姻のみ線
@@ -371,13 +375,13 @@ async function f_familytree(a_url, a_div_id) {
 		}
 		const c_generation = c_group["generation"] - 1;
 		const c_group_line_order = c_group["group_line_order"];
-		const c_group_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_group_line_order * 4;
+		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + (c_settings["text_length"] + 1) * c_settings["font_size"] + c_group_line_order * c_settings["line_space"];
 		//
 		const c_father = c_person_index[c_father_id];
-		const c_father_x = c_father["x"] + 8 * c_font_size_1;
+		const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
 		const c_father_y = c_father["y"];
 		const c_mother = c_person_index[c_mother_id];
-		const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
+		const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
 		const c_mother_y = c_mother["y"];
 		l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
 		l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
@@ -395,21 +399,21 @@ async function f_familytree(a_url, a_div_id) {
 			continue;
 		}
 		const c_group_line_order = c_group["group_line_order"];
-		const c_group_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_group_line_order * 4;
+		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + (c_settings["text_length"] + 1) * c_settings["font_size"] + c_group_line_order * c_settings["line_space"];
 		//一番最初の人
 		const c_person_id = c_group["child_ids"][0];
-		const c_group_y = c_person_index[c_person_id]["y"] + c_font_size_1;
+		const c_group_y = c_person_index[c_person_id]["y"] + c_settings["font_size"] * c_settings["line_height"] / 2;
 		//兄弟姉妹の線のx
-		const c_sibling_x = c_x - c_font_size_1;
+		const c_sibling_x = c_x - c_settings["font_size"];
 		if (c_father_id !== null) {
 			const c_father = c_person_index[c_father_id];
-			const c_father_x = c_father["x"] + 8 * c_font_size_1;
+			const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
 			const c_father_y = c_father["y"];
 			l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 		}
 		if (c_mother_id !== null) {
 			const c_mother = c_person_index[c_mother_id];
-			const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
+			const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
 			const c_mother_y = c_mother["y"];
 			l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 
@@ -428,16 +432,16 @@ async function f_familytree(a_url, a_div_id) {
 		}
 		const c_generation = c_group["generation"] - 1;
 		const c_group_line_order = c_group["group_line_order"];
-		const c_group_x = c_generation * 16 * c_font_size_1 + 9 * c_font_size_1 + c_group_line_order * 4;
+		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + (c_settings["text_length"] + 1) * c_settings["font_size"] + c_group_line_order * c_settings["line_space"];
 		if (c_father_id !== null) {
 			const c_father = c_person_index[c_father_id];
-			const c_father_x = c_father["x"] + 8 * c_font_size_1;
+			const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
 			const c_father_y = c_father["y"];
 			l_paths += "<path style=\"stroke: #0000FF; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 		}
 		if (c_mother_id !== null) {
 			const c_mother = c_person_index[c_mother_id];
-			const c_mother_x = c_mother["x"] + 8 * c_font_size_1;
+			const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
 			const c_mother_y = c_mother["y"];
 			l_paths += "<path style=\"stroke: #FF0000; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 
@@ -446,5 +450,17 @@ async function f_familytree(a_url, a_div_id) {
 	console.log(c_persons);
 	console.log(c_marriages);
 	document.getElementById(a_div_id).innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" baseProfile=\"full\" viewBox=\"0 0 1536 2048\" width=\"1536\" height=\"2048\">" + "<g style=\"font-size: 16px; line-height: 1; font-family: IPAmjMincho;\">" + l_texts + "</g>" + "<g style=\"fill: none; stroke: #000000; stroke-width: 2;\">" + l_paths + "</g>" + "</svg>";
+	document.getElementById(a_div_id).innerHTML += "<div><a id=\"output_svg\" href=\"#\" download=\"familytree.svg\" onclick=\"f_output_svg('" + a_div_id +"')\">SVG保存</a></div>";
+}
+
+
+function f_output_svg(a_div_id) {
+	const c_svg = document.getElementById(a_div_id).firstElementChild.outerHTML;
+	const c_blob = new Blob([c_svg], {"type": "image/svg+xml"});
+	if (window.navigator.msSaveBlob) { 
+		window.navigator.msSaveBlob(c_blob, "familytree.svg"); 
+	} else {
+		document.getElementById("output_svg").href = window.URL.createObjectURL(c_blob);
+	}
 }
 
