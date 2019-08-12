@@ -351,8 +351,8 @@ async function f_familytree(a_url, a_div_id) {
 	c_settings["text_length"] = 8; //想定する最大文字数
 	c_settings["length"] = 12; //横の間隔（文字数で表記）
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
-		c_persons[i1]["x"] = c_persons[i1]["generation"] * c_settings["length"] * c_settings["font_size"];
-		c_persons[i1]["y"] = c_persons[i1]["order"] * c_settings["line_height"] * c_settings["font_size"] + 32;
+		c_persons[i1]["x"] = c_persons[i1]["generation"] * c_settings["length"] * c_settings["font_size"] + c_settings["font_size"];
+		c_persons[i1]["y"] = c_persons[i1]["order"] * c_settings["line_height"] * c_settings["font_size"] + c_settings["font_size"];
 	}
 	//テキスト
 	let l_texts = "";
