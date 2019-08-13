@@ -43,8 +43,14 @@ async function f_familytree(a_url, a_div_id) {
 			//筆頭親head_idの"father_id"と"mother_id"をそれぞれのidかnullに変える。
 			if (c_data[i1]["head_id"] === "father_id") {
 				c_data[i1]["head_id"] = c_data[i1]["father_id"];
+				if (c_data[i1]["head_id"] === null) {
+					c_data[i1]["head_id"] = c_data[i1]["mother_id"];
+				}
 			} else if (c_data[i1]["head_id"] === "mother_id") {
 				c_data[i1]["head_id"] = c_data[i1]["mother_id"];
+				if (c_data[i1]["head_id"] === null) {
+					c_data[i1]["head_id"] = c_data[i1]["father_id"];
+				}
 			}
 		} else if (c_data[i1]["type"] === "marriage") {
 			if (c_data[i1]["husband_id"] === undefined) {
@@ -56,8 +62,14 @@ async function f_familytree(a_url, a_div_id) {
 			//筆頭親head_idの"father_id"と"mother_id"をそれぞれのidかnullに変える。
 			if (c_data[i1]["head_id"] === "father_id") {
 				c_data[i1]["head_id"] = c_data[i1]["husband_id"];
+				if (c_data[i1]["head_id"] === null) {
+					c_data[i1]["head_id"] = c_data[i1]["wife_id"];
+				}
 			} else if (c_data[i1]["head_id"] === "mother_id") {
 				c_data[i1]["head_id"] = c_data[i1]["wife_id"];
+				if (c_data[i1]["head_id"] === null) {
+					c_data[i1]["head_id"] = c_data[i1]["husband_id"];
+				}
 			}
 		}
 	}
