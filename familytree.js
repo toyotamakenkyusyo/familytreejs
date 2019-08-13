@@ -365,6 +365,7 @@ async function f_familytree(a_url, a_div_id) {
 	}
 	//テキスト
 	let l_texts = "";
+	let l_paths = "";
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
 		const c_name = c_persons[i1]["id"].split("_");
 		if (c_name[1] === undefined) {
@@ -393,10 +394,32 @@ async function f_familytree(a_url, a_div_id) {
 				c_name[1] = "";
 			}
 			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + c_group["y"] + "\"><tspan style=\"fill: #808080;\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
+			
+			//仮表示への婚姻線
+			const c_generation = c_group["generation"] - 1;
+			const c_group_line_order = c_group["group_line_order"];
+			const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + c_settings["text_length"] * c_settings["font_size"] + c_settings["left_offset"] + c_group_line_order * c_settings["line_space"];
+			//場合分け
+			if (c_head_id === c_husband_id) {
+				const c_father = c_person_index[c_head_id];
+				const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
+				const c_father_y = c_father["y"];
+				const c_mother_x = c_group["x"] + c_settings["text_length"] * c_settings["font_size"];
+				const c_mother_y = c_group["y"];
+				l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
+				l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
+			} else if (c_head_id === c_wife_id) {
+				const c_father_x = c_group["x"] + c_settings["text_length"] * c_settings["font_size"];
+				const c_father_y = c_group["y"];
+				const c_mother = c_person_index[c_head_id];
+				const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
+				const c_mother_y = c_mother["y"];
+				l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
+				l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
+			}
 		}
 	}
 	
-	let l_paths = "";
 	//婚姻のみ線
 	for (let i1 = 0; i1 < c_marriages.length; i1++) {
 		const c_father_id = c_marriages[i1]["husband_id"];
@@ -440,7 +463,8 @@ async function f_familytree(a_url, a_div_id) {
 		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + c_settings["text_length"] * c_settings["font_size"] + c_settings["left_offset"] + c_group_line_order * c_settings["line_space"];
 		//一番最初の人
 		const c_person_id = c_group["child_ids"][0];
-		const c_group_y = c_person_index[c_person_id]["y"] + c_settings["font_size"] * c_settings["line_height"] / 2;
+		const c_group_y = c_person_index[c_person_id]["y"] - c_settings["font_size"] * c_settings["line_height"] / 2;
+		//const c_group_y = c_person_index[c_person_id]["y"] + c_settings["font_size"] * c_settings["line_height"] / 2;
 		//兄弟姉妹の線のx
 		const c_sibling_x = c_x - c_settings["right_offset"];
 		if (c_father_id !== null) {
