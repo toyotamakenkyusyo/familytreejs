@@ -353,6 +353,12 @@ async function f_familytree(a_url, a_div_id) {
 		const c_other_id = c_data[i1]["other_id"];
 		//head_personと欠けた婚姻は除く
 		if (c_type === "person" && c_head_id === null) { //一番はじめ
+			//名
+			const c_name = c_data[i1]["id"].split("_");
+			if (c_name[1] === undefined) {
+				c_name[1] = "";
+			}
+			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" +c_data[i1]["x"] + "\" y=\"" + c_data[i1]["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 			continue;
 		}
 		if (c_type === "marriage" && (c_father_id === null || c_mother_id === null)) { //片方ない婚姻
