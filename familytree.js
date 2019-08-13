@@ -22,7 +22,7 @@ async function f_familytree(a_url, a_div_id) {
 	const c_settings = {
 		"one_per_row": true, //1行あたり1人のみ表示の場合true
 		"show_other_parent": true, //headでない親を簡易表示、one_per_rowがtrueの場合に有効
-		"show_parent_line": false, //通常の親子線を非表示（show_other_parentがtrueのとき）
+		"show_standard_line": false, //通常の親子線と婚姻線を非表示（show_other_parentがtrueのとき）
 		"sibling_line_up": true, //兄弟束ねる横線の位置を上にする
 		"head_id": "father_id", //表示は父系基準とする
 		"font_size": 16, //フォントサイズ
@@ -416,8 +416,10 @@ async function f_familytree(a_url, a_div_id) {
 		const c_mother_y_2 = l_mother_2["y"];
 		
 		if (c_type === "marriage") { //婚姻線と仮の名
-			l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
-			l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
+			if (c_settings["show_standard_line"] === true) {
+				l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
+				l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
+			}
 			if (c_settings["show_other_parent"] === true) {
 				//仮の名
 				const c_name = c_other_id.split("_");
@@ -435,7 +437,7 @@ async function f_familytree(a_url, a_div_id) {
 			const c_group_y = c_person_index[c_person_id]["y"] + l_sibling_line_up;
 			//兄弟姉妹の線のx
 			const c_sibling_x = c_x - c_settings["right_offset"];
-			if (c_settings["show_parent_line"] === true) {
+			if (c_settings["show_standard_line"] === true) {
 				if (c_father_id !== null) {
 					l_parent_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 				}
