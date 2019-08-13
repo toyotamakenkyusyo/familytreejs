@@ -384,114 +384,88 @@ async function f_familytree(a_url, a_div_id) {
 		}
 	}
 	
-	//婚姻のみ線
-	for (let i1 = 0; i1 < c_marriages.length; i1++) {
-		const c_father_id = c_marriages[i1]["father_id"];
-		const c_mother_id = c_marriages[i1]["mother_id"];
-		const c_head_id = c_marriages[i1]["head_id"];
-		const c_other_id = c_marriages[i1]["other_id"];
-		if (c_father_id === null && c_mother_id === null) {
+	
+	let l_marriage_line = "";
+	let l_parent_line = "";
+	let l_adoption_line = "";
+	//線
+	for (let i1 = 0; i1 < c_data.length; i1++) {
+		const c_type = c_data[i1]["type"];
+		const c_father_id = c_data[i1]["father_id"];
+		const c_mother_id = c_data[i1]["mother_id"];
+		const c_head_id = c_data[i1]["head_id"];
+		const c_other_id = c_data[i1]["other_id"];
+		//head_personと欠けた婚姻は除く
+		if (c_type === "person" && c_head_id === null) { //一番はじめ
+			continue;
+		}
+		if (c_type === "marriage" && (c_father_id === null || c_mother_id === null)) { //片方ない婚姻
 			continue;
 		}
 		const c_group_id = f_group_id(c_father_id, c_mother_id, c_head_id, c_other_id);
 		const c_group = c_group_index[c_group_id];
-		if (c_group === undefined) {
-			continue;
+		//generationの計算
+		if (c_type === "marriage" || c_type === "adoption") {
+			c_data[i1]["generation"] = c_group["generation"];
 		}
-		const c_generation = c_group["generation"] - 1;
+		const c_generation = c_data[i1]["generation"] - 1;
 		const c_group_line_order = c_group["group_line_order"];
 		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + c_settings["text_length"] * c_settings["font_size"] + c_settings["left_offset"] + c_group_line_order * c_settings["line_space"];
-		//
-		const c_father = c_person_index[c_father_id];
-		const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
-		const c_father_y = c_father["y"];
-		const c_mother = c_person_index[c_mother_id];
-		const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
-		const c_mother_y = c_mother["y"];
-		l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
-		l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
-	}
-	//親子線
-	for (let i1 = 0; i1 < c_persons.length; i1++) {
-		const c_x = c_persons[i1]["x"];
-		const c_y = c_persons[i1]["y"];
-		const c_generation = c_persons[i1]["generation"] - 1;
-		const c_father_id = c_persons[i1]["father_id"];
-		const c_mother_id = c_persons[i1]["mother_id"];
-		const c_head_id = c_persons[i1]["head_id"];
-		const c_other_id = c_persons[i1]["other_id"];
-		const c_group_id = f_group_id(c_father_id, c_mother_id, c_head_id, c_other_id);
-		const c_group = c_group_index[c_group_id];
-		if (c_group === undefined) {
-			continue;
+		//xyの計算
+		if (c_type === "adoption") {
+			const c_id = c_data[i1]["id"];
+			c_data[i1]["x"] = c_person_index[c_id]["x"];
+			c_data[i1]["y"] = c_person_index[c_id]["y"];
 		}
-		const c_group_line_order = c_group["group_line_order"];
-		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + c_settings["text_length"] * c_settings["font_size"] + c_settings["left_offset"] + c_group_line_order * c_settings["line_space"];
-		//一番最初の人
-		const c_person_id = c_group["child_ids"][0];
-		const c_group_y = c_person_index[c_person_id]["y"] + l_sibling_line_up;
-		//兄弟姉妹の線のx
-		const c_sibling_x = c_x - c_settings["right_offset"];
+		const c_x = c_data[i1]["x"]; //undefinedかもしれない
+		const c_y = c_data[i1]["y"]; //undefinedかもしれない
+		//fatherやmotherはnullかもしれない
+		let l_father;
+		let l_mother;
 		if (c_father_id !== null) {
-			const c_father = c_person_index[c_father_id];
-			const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
-			const c_father_y = c_father["y"];
-			l_paths += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			l_father = c_person_index[c_father_id];
+		} else {
+			l_father = {"x": 0, "y": 0}; //仮
 		}
 		if (c_mother_id !== null) {
-			const c_mother = c_person_index[c_mother_id];
-			const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
-			const c_mother_y = c_mother["y"];
-			l_paths += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			l_mother = c_person_index[c_mother_id];
+		} else {
+			l_mother = {"x": 0, "y": 0}; //仮
+		}
+		const c_father_x = l_father["x"] + c_settings["text_length"] * c_settings["font_size"];
+		const c_father_y = l_father["y"];
+		const c_mother_x = l_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
+		const c_mother_y = l_mother["y"];
+		
+		if (c_type === "marriage") { //婚姻線
+			l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
+			l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
+		} else if (c_type === "person") { //親子線
+			//一番最初の人
+			const c_person_id = c_group["child_ids"][0];
+			const c_group_y = c_person_index[c_person_id]["y"] + l_sibling_line_up;
+			//兄弟姉妹の線のx
+			const c_sibling_x = c_x - c_settings["right_offset"];
+			if (c_father_id !== null) {
+				l_parent_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			}
+			if (c_mother_id !== null) {
+				l_parent_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 
+			}
+		} else if (c_type === "adoption") { //養子線
+			if (c_father_id !== null) {
+				l_adoption_line += "<path style=\"stroke: #0000FF; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			}
+			if (c_mother_id !== null) {
+				l_adoption_line += "<path style=\"stroke: #FF0000; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+			}
 		}
 	}
+	l_paths += l_marriage_line + l_parent_line + l_adoption_line;
 	
 	
-	//a_personが本人
-	//a_parentがfatherかmother
-	//a_groupが本人の属するgroup
-	//a_colorが線の色
-	/*
-	function f_parent_line(a_person, a_parent, a_group, a_color) {
-		const c_x = a_person["x"];
-		const c_y = a_person["y"];
-		const c_parent_x = a_parent["x"] + c_settings["text_length"] * c_settings["font_size"];
-		const c_parent_y = a_parent["y"];
-		return "<path style=\"stroke: #FF0000;\" d=\"M " + c_parent_x + ", " +c_parent_y + " L " + c_group_x +  ", " + c_parent_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
-	}
-	*/
 	
-	//養子線
-	for (let i1 = 0; i1 < c_adoptions.length; i1++) {
-		const c_x = c_person_index[c_adoptions[i1]["id"]]["x"];
-		const c_y = c_person_index[c_adoptions[i1]["id"]]["y"];
-		const c_father_id = c_adoptions[i1]["father_id"];
-		const c_mother_id = c_adoptions[i1]["mother_id"];
-		const c_head_id = c_adoptions[i1]["head_id"];
-		const c_other_id = c_adoptions[i1]["other_id"];
-		const c_group_id = f_group_id(c_father_id, c_mother_id, c_head_id, c_other_id);
-		const c_group = c_group_index[c_group_id];
-		if (c_group === undefined) {
-			continue;
-		}
-		const c_generation = c_group["generation"] - 1;
-		const c_group_line_order = c_group["group_line_order"];
-		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + c_settings["text_length"] * c_settings["font_size"] + c_settings["left_offset"] + c_group_line_order * c_settings["line_space"];
-		if (c_father_id !== null) {
-			const c_father = c_person_index[c_father_id];
-			const c_father_x = c_father["x"] + c_settings["text_length"] * c_settings["font_size"];
-			const c_father_y = c_father["y"];
-			l_paths += "<path style=\"stroke: #0000FF; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
-		}
-		if (c_mother_id !== null) {
-			const c_mother = c_person_index[c_mother_id];
-			const c_mother_x = c_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
-			const c_mother_y = c_mother["y"];
-			l_paths += "<path style=\"stroke: #FF0000; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
-
-		}
-	}
 	console.log(c_persons);
 	console.log(c_marriages);
 	document.getElementById(a_div_id).innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" baseProfile=\"full\" viewBox=\"0 0 1024 2048\" width=\"1024\" height=\"2048\">" + "<g style=\"font-size: 16px; line-height: 1; font-family: IPAmjMincho;\">" + l_texts + "</g>" + "<g style=\"fill: none; stroke: #000000; stroke-width: " + c_settings["line_width"] + ";\">" + l_paths + "</g>" + "</svg>";
