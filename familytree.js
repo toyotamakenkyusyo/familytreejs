@@ -409,10 +409,10 @@ async function f_familytree(a_url, a_div_id) {
 			l_father_2 = c_group;
 			l_mother_2 = c_person_index[c_head_id];
 		}
-		const c_father_x_2 = l_father["x"] + c_settings["text_length"] * c_settings["font_size"];
-		const c_father_y_2 = l_father["y"];
-		const c_mother_x_2 = l_mother["x"] + c_settings["text_length"] * c_settings["font_size"];
-		const c_mother_y_2 = l_mother["y"];
+		const c_father_x_2 = l_father_2["x"] + c_settings["text_length"] * c_settings["font_size"];
+		const c_father_y_2 = l_father_2["y"];
+		const c_mother_x_2 = l_mother_2["x"] + c_settings["text_length"] * c_settings["font_size"];
+		const c_mother_y_2 = l_mother_2["y"];
 		
 		if (c_type === "marriage") { //婚姻線と仮の名
 			l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
