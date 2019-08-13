@@ -359,7 +359,7 @@ async function f_familytree(a_url, a_div_id) {
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}
-			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" +c_data[i1]["x"] + "\" y=\"" + c_data[i1]["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
+			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" +c_data[i1]["x"] + "\" y=\"" + (c_data[i1]["y"] + c_settings["font_size"] / 4) + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 			continue;
 		}
 		if (c_type === "marriage" && (c_father_id === null || c_mother_id === null)) { //片方ない婚姻
@@ -426,7 +426,7 @@ async function f_familytree(a_url, a_div_id) {
 				if (c_name[1] === undefined) {
 					c_name[1] = "";
 				}
-				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + c_group["y"] + "\"><tspan style=\"fill: #808080;\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
+				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + (c_group["y"] + c_settings["font_size"] / 4) + "\"><tspan style=\"fill: #808080;\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
 				//仮の婚姻線
 				l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x_2 +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + "\" />";
 				l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + "\" />";
@@ -450,7 +450,7 @@ async function f_familytree(a_url, a_div_id) {
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}
-			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_x + "\" y=\"" + c_y + "\">" + c_name[0] + " " + c_name[1] + "</text>";
+			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_x + "\" y=\"" + (c_y + c_settings["font_size"] / 4) + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 			if (c_settings["show_other_parent"] === true) {
 				//仮の親子線
 				if (c_father_id !== null) {
