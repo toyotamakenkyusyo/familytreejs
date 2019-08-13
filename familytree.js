@@ -392,7 +392,7 @@ async function f_familytree(a_url, a_div_id) {
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}
-			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + c_group["y"] + "\"><tspan style=\"color: #808080\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
+			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + c_group["y"] + "\"><tspan style=\"fill: #808080;\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
 		}
 	}
 	
