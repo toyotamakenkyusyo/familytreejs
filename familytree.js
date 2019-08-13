@@ -80,9 +80,17 @@ async function f_familytree(a_url, a_div_id) {
 		if (c_data[i1]["head"] === "father_id") {
 			c_data[i1]["head_id"] = c_data[i1]["father_id"];
 			c_data[i1]["other_id"] = c_data[i1]["mother_id"];
+			if (c_data[i1]["head_id"] === null) {
+				c_data[i1]["head_id"] = c_data[i1]["mother_id"];
+				c_data[i1]["other_id"] = c_data[i1]["father_id"];
+			}
 		} else if (c_data[i1]["head"] === "mother_id") {
 			c_data[i1]["head_id"] = c_data[i1]["mother_id"];
 			c_data[i1]["other_id"] = c_data[i1]["father_id"];
+			if (c_data[i1]["head_id"] === null) {
+				c_data[i1]["head_id"] = c_data[i1]["father_id"];
+				c_data[i1]["other_id"] = c_data[i1]["mother_id"];
+			}
 		}
 	}
 	
