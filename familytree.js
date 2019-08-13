@@ -164,7 +164,6 @@ async function f_familytree(a_url, a_div_id) {
 		const c_group_id = "group_" + c_father_id + "_" + c_mother_id + "_" + c_head_id;
 		let l_group = c_group_index[c_group_id];
 		if (l_group === undefined) { //ない場合、加える
-			//console.log(c_persons[i1]);
 			const c_groups = c_person_index[c_head_id]["groups"];
 			c_groups.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
 			c_group_index[c_group_id] = c_groups[c_groups.length - 1];
@@ -198,7 +197,6 @@ async function f_familytree(a_url, a_div_id) {
 		const c_group_id = "group_" + c_father_id + "_" + c_mother_id + "_" + c_head_id;
 		let l_group = c_group_index[c_group_id];
 		if (l_group === undefined) { //ない場合、加える
-			console.log(c_adoptions[i1]);
 			const c_groups = c_person_index[c_head_id]["groups"];
 			c_groups.push({"father_id": c_father_id, "mother_id": c_mother_id, "child_ids": [], "width": null, "marriage": null});
 			c_group_index[c_group_id] = c_groups[c_groups.length - 1];
