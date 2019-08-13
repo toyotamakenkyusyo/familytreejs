@@ -223,9 +223,12 @@ async function f_familytree(a_url, a_div_id) {
 					}
 					l_group_width += c_child_width;
 				}
+				if (c_settings["one_per_row"] === true && l_group_width === 0) {
+					l_group_width += 1; //子が0人のとき親1人分とる
+				}
 				c_groups[i2]["width"] = l_group_width;
 			}
-			//familyのwidth
+			//groupのwidth
 			let l_width = 0;
 			for (let i2 = 0; i2 < c_groups.length; i2++) {
 				const c_group_width = c_groups[i2]["width"];
@@ -239,7 +242,7 @@ async function f_familytree(a_url, a_div_id) {
 			if (l_width === 0) {
 				l_width = 1; //0人でも親の分を確保する
 			} else if (c_settings["one_per_row"] === true && l_width !== null) {
-				l_width += 1;
+				l_width += 1; //親の分をずらす
 			}
 			c_persons[i1]["width"] = l_width;
 		}
@@ -257,6 +260,9 @@ async function f_familytree(a_url, a_div_id) {
 		const c_groups = c_person_index[a_id]["groups"];
 		for (let i1 = 0; i1 < c_groups.length; i1++) {
 			c_groups[i1]["order"] = l_group_order;
+			if (c_settings["one_per_row"] === true) {
+				c_groups[i1]["order"] += 1; //理由は未確認だが、こうすると位置が合う
+			}
 			let l_child_order = l_group_order;
 			if (c_settings["one_per_row"] === true) {
 				l_child_order += 1;
@@ -348,9 +354,14 @@ async function f_familytree(a_url, a_div_id) {
 	c_settings["right_offset"] = 8; //右の字と線の間隔
 	c_settings["text_length"] = 8; //想定する最大文字数
 	c_settings["length"] = 12; //横の間隔（文字数で表記）
+	//xyの計算
 	for (let i1 = 0; i1 < c_persons.length; i1++) {
 		c_persons[i1]["x"] = c_persons[i1]["generation"] * c_settings["length"] * c_settings["font_size"];
 		c_persons[i1]["y"] = c_persons[i1]["order"] * c_settings["line_height"] * c_settings["font_size"] + c_settings["font_size"];
+	}
+	for (let i1 in c_group_index) {
+		c_group_index[i1]["x"] = (c_group_index[i1]["generation"] - 1) * c_settings["length"] * c_settings["font_size"];
+		c_group_index[i1]["y"] = c_group_index[i1]["order"] * c_settings["line_height"] * c_settings["font_size"] + c_settings["font_size"];
 	}
 	//テキスト
 	let l_texts = "";
@@ -361,6 +372,30 @@ async function f_familytree(a_url, a_div_id) {
 		}
 		l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_persons[i1]["x"] + "\" y=\"" + c_persons[i1]["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 	}
+	//婚姻の場合、母方等の名を仮に表示する
+	if (c_settings["one_per_row"] === true) {
+		for (let i1 = 0; i1 < c_marriages.length; i1++) {
+			const c_head_id = c_marriages[i1]["head_id"];
+			const c_husband_id = c_marriages[i1]["husband_id"];
+			const c_wife_id = c_marriages[i1]["wife_id"];
+			let l_not_head_id; //head_idでない方（婚姻の場合存在するはず）
+			if (c_head_id === c_husband_id) {
+				l_not_head_id = c_wife_id;
+			} else if (c_head_id === c_wife_id) {
+				l_not_head_id = c_husband_id;
+			}
+			//対応するgroupを探す
+			const c_group_id = "group_" + c_husband_id + "_" + c_wife_id + "_" + c_head_id;
+			const c_group = c_group_index[c_group_id];
+			//名
+			const c_name = l_not_head_id.split("_");
+			if (c_name[1] === undefined) {
+				c_name[1] = "";
+			}
+			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + c_group["y"] + "\">" + c_name[0] + " " + c_name[1] + "</text>";
+		}
+	}
+	
 	let l_paths = "";
 	//婚姻のみ線
 	for (let i1 = 0; i1 < c_marriages.length; i1++) {
