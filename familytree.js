@@ -17,6 +17,30 @@ function f_xhr_get(a_url, a_type) {
 	return new Promise(f_promise);
 }
 
+//入力するファイルは、
+/*
+[
+	{
+		"type": "person"/"marriage"/"adoption"/null/undefined, //null/undefinedはpersonとみなす
+		"id": "氏_名"/null/undefined, //marriageの場合はnull/undefined
+		"father_id": "氏_名"/null/undefined,
+		"mother_id": "氏_名"/null/undefined,
+		"husband_id": "氏_名"/null/undefined, //marriageの場合にfather_idの代用として許容
+		"wife_id": "氏_名"/null/undefined, //marriageの場合にmother_idの代用として許容
+		"head": "father_id"/"mother_id"/null/undefined, //表示上の筆頭者、null/undefinedの場合は設定により自動入力
+		"head_id": undefined, //自動入力
+		"other_id": undefined, //自動入力
+		"sex": "male"/"female"/null/undefined, //不使用
+		"birth_date": "yyyy-mm-dd"/"unknown"/null/undefined, //不使用
+		"start_date": "yyyy-mm-dd"/"unknown"/null/undefined, //不使用
+		"death_date": "yyyy-mm-dd"/"unknown"/null/undefined, //不使用
+		"end_date": "yyyy-mm-dd"/"unknown"/null/undefined, //不使用
+		"source": "koseki"/null/undefined, //不使用
+	}
+]
+*/
+
+
 async function f_familytree(a_url, a_div_id) {
 	//設定
 	const c_settings = {
