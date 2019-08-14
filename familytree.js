@@ -503,7 +503,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 	
 	console.log(c_persons);
 	console.log(c_marriages);
-	document.getElementById(a_div_id).innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" baseProfile=\"full\" viewBox=\"0 0 1024 2048\" width=\"1024\" height=\"2048\">" + "<g style=\"font-size: 16px; line-height: 1; font-family: IPAmjMincho;\">" + l_texts + "</g>" + "<g style=\"fill: none; stroke: #000000; stroke-width: " + c_settings["line_width"] + ";\">" + l_paths + "</g>" + "</svg>";
+	document.getElementById(a_div_id).innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" baseProfile=\"full\" viewBox=\"0 0 " + c_settings["svg_width"] + " " + c_settings["svg_height"] + "\" width=\"" + c_settings["svg_width"] + "\" height=\"" + c_settings["svg_height"] + "\">" + "<g style=\"font-size: 16px; line-height: 1; font-family: IPAmjMincho;\">" + l_texts + "</g>" + "<g style=\"fill: none; stroke: #000000; stroke-width: " + c_settings["line_width"] + ";\">" + l_paths + "</g>" + "</svg>";
 	document.getElementById(a_div_id).innerHTML += "<div><a id=\"output_svg\" href=\"#\" download=\"familytree.svg\" onclick=\"f_output_svg('" + a_div_id +"')\">SVG保存</a></div>";
 }
 
