@@ -82,9 +82,17 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		} else if (c_data[i1]["head"] === "wife_id") {
 			c_data[i1]["head"] = "mother_id";
 		} else if (c_data[i1]["head"] === undefined || c_data[i1]["head"] === null) {
-			c_data[i1]["head"] = c_settings["head_id"];
+			if (c_settings["head_id"] === "first") {
+				c_data[i1]["head"] = "father_id";
+			} else {
+				c_data[i1]["head"] = c_settings["head_id"];
+			}
 		} else if (c_data[i1]["head"] !== "father_id" && c_data[i1]["head"] !== "mother_id") {
-			c_data[i1]["head"] = c_settings["head_id"];
+			if (c_settings["head_id"] === "first") {
+				c_data[i1]["head"] = "father_id";
+			} else {
+				c_data[i1]["head"] = c_settings["head_id"];
+			}
 		}
 		//father_id、mother_id、husband_id、wife_idをそろえる
 		if (c_data[i1]["father_id"] === undefined) {
@@ -123,6 +131,45 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		}
 	}
 	
+	//headがfirstの場合（最初の人物の子孫をheadにする）
+	const c_descendant_index = {}; //最初の人物の子孫
+	c_descendant_index[c_data[0]["id"]] = c_data[0]; //最初の人物を加える（最初のtypeがpersonという前提）
+	let l_exist_3 = true; //追加がなされたらtrue
+	while (l_exist_3 === true) {
+		l_exist_3 = false;
+		for (let i1 = 0; i1 < c_data.length; i1++) {
+			if (c_data[i1]["type"] === "person") {
+				const c_id = c_data[i1]["id"];
+				const c_father_id = c_data[i1]["father_id"];
+				const c_mother_id = c_data[i1]["mother_id"];
+				if (c_father_id !== null) {
+					if (c_descendant_index[c_father_id] !== undefined && c_descendant_index[c_id] === undefined) {
+						c_descendant_index[c_id] = c_data[i1];
+						l_exist_3 = true;
+					}
+				}
+				if (c_mother_id !== null) {
+					if (c_descendant_index[c_mother_id] !== undefined && c_descendant_index[c_id] === undefined) {
+						c_descendant_index[c_id] = c_data[i1];
+						l_exist_3 = true;
+					}
+				} 
+			}
+		}
+	}
+	//head_idとother_idを変更する
+	if (c_settings["head_id"] === "first") {
+		for (let i1 = 0; i1 < c_data.length; i1++) {
+			const c_head_id = c_data[i1]["head_id"];
+			const c_other_id = c_data[i1]["other_id"];
+			if (c_head_id !== null && c_other_id !== null) { //両方存在（変更可能）
+				if (c_descendant_index[c_head_id] === undefined && c_descendant_index[c_other_id] !== undefined) { //other_idのみが最初の人物の子孫の場合
+					c_data[i1]["head_id"] = c_other_id;
+					c_data[i1]["other_id"] = c_head_id;
+				}
+			}
+		}
+	}
 	//分類
 	const c_persons = [];
 	const c_marriages = [];
