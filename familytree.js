@@ -41,8 +41,12 @@ function f_xhr_get(a_url, a_type) {
 */
 
 
-async function f_familytree(a_url, a_div_id) {
+async function f_familytree(a_url, a_div_id, a_settings) {
 	//設定
+	const c_settings = a_settings;
+	
+	
+	/*
 	const c_settings = {
 		"one_per_row": true, //1行あたり1人のみ表示の場合true
 		"show_other_parent": true, //headでない親を簡易表示、one_per_rowがtrueの場合に有効
@@ -58,7 +62,7 @@ async function f_familytree(a_url, a_div_id) {
 		"text_length": 8, //想定する最大文字数
 		"length": 12 //横の間隔（文字数で表記）
 	};
-	
+	*/
 	//読み込み
 	const c_data = JSON.parse((await f_xhr_get(a_url, "text")).responseText);
 	//データの整理
