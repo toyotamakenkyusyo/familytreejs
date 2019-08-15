@@ -82,17 +82,9 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		} else if (c_data[i1]["head"] === "wife_id") {
 			c_data[i1]["head"] = "mother_id";
 		} else if (c_data[i1]["head"] === undefined || c_data[i1]["head"] === null) {
-			if (c_settings["head_id"] === "first") {
-				c_data[i1]["head"] = "father_id";
-			} else {
-				c_data[i1]["head"] = c_settings["head_id"];
-			}
+			c_data[i1]["head"] = c_settings["head_id"];
 		} else if (c_data[i1]["head"] !== "father_id" && c_data[i1]["head"] !== "mother_id") {
-			if (c_settings["head_id"] === "first") {
-				c_data[i1]["head"] = "father_id";
-			} else {
-				c_data[i1]["head"] = c_settings["head_id"];
-			}
+			c_data[i1]["head"] = c_settings["head_id"];
 		}
 		//father_id、mother_id、husband_id、wife_idをそろえる
 		if (c_data[i1]["father_id"] === undefined) {
@@ -131,34 +123,35 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		}
 	}
 	
-	//headがfirstの場合（最初の人物の子孫をheadにする）
-	const c_descendant_index = {}; //最初の人物の子孫
-	c_descendant_index[c_data[0]["id"]] = c_data[0]; //最初の人物を加える（最初のtypeがpersonという前提）
-	let l_exist_3 = true; //追加がなされたらtrue
-	while (l_exist_3 === true) {
-		l_exist_3 = false;
-		for (let i1 = 0; i1 < c_data.length; i1++) {
-			if (c_data[i1]["type"] === "person") {
-				const c_id = c_data[i1]["id"];
-				const c_father_id = c_data[i1]["father_id"];
-				const c_mother_id = c_data[i1]["mother_id"];
-				if (c_father_id !== null) {
-					if (c_descendant_index[c_father_id] !== undefined && c_descendant_index[c_id] === undefined) {
-						c_descendant_index[c_id] = c_data[i1];
-						l_exist_3 = true;
+	//descendantがundefinedかnullでない場合、n番目の子孫をheadにする。
+	//名字の色は未対応
+	if (c_settings["descendant"] !== undefined && c_settings["descendant"] !== null) {
+		const c_descendant_index = {}; //n番目の人物の子孫
+		c_descendant_index[c_data[c_settings["descendant"]]["id"]] = c_data[c_settings["descendant"]]; //n番目の人物を加える（typeがpersonという前提）
+		let l_exist_3 = true; //追加がなされたらtrue
+		while (l_exist_3 === true) {
+			l_exist_3 = false;
+			for (let i1 = 0; i1 < c_data.length; i1++) {
+				if (c_data[i1]["type"] === "person") {
+					const c_id = c_data[i1]["id"];
+					const c_father_id = c_data[i1]["father_id"];
+					const c_mother_id = c_data[i1]["mother_id"];
+					if (c_father_id !== null) {
+						if (c_descendant_index[c_father_id] !== undefined && c_descendant_index[c_id] === undefined) {
+							c_descendant_index[c_id] = c_data[i1];
+							l_exist_3 = true;
+						}
 					}
+					if (c_mother_id !== null) {
+						if (c_descendant_index[c_mother_id] !== undefined && c_descendant_index[c_id] === undefined) {
+							c_descendant_index[c_id] = c_data[i1];
+							l_exist_3 = true;
+						}
+					} 
 				}
-				if (c_mother_id !== null) {
-					if (c_descendant_index[c_mother_id] !== undefined && c_descendant_index[c_id] === undefined) {
-						c_descendant_index[c_id] = c_data[i1];
-						l_exist_3 = true;
-					}
-				} 
 			}
 		}
-	}
-	//head_idとother_idを変更する
-	if (c_settings["head_id"] === "first") {
+		//head_idとother_idを変更する
 		for (let i1 = 0; i1 < c_data.length; i1++) {
 			const c_head_id = c_data[i1]["head_id"];
 			const c_other_id = c_data[i1]["other_id"];
@@ -166,6 +159,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				if (c_descendant_index[c_head_id] === undefined && c_descendant_index[c_other_id] !== undefined) { //other_idのみが最初の人物の子孫の場合
 					c_data[i1]["head_id"] = c_other_id;
 					c_data[i1]["other_id"] = c_head_id;
+					c_data[i1]["head"] += "_changed";
 				}
 			}
 		}
@@ -427,6 +421,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		const c_mother_id = c_data[i1]["mother_id"];
 		const c_head_id = c_data[i1]["head_id"];
 		const c_other_id = c_data[i1]["other_id"];
+		const c_head = c_data[i1]["head"];
 		//head_personと欠けた婚姻は除く
 		if (c_type === "person" && c_head_id === null) { //一番はじめ
 			//名
@@ -501,7 +496,11 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				if (c_name[1] === undefined) {
 					c_name[1] = "";
 				}
-				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + (c_group["y"] + c_settings["font_size"] / 4) + "\"><tspan style=\"fill: #808080;\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
+				let l_color = "#808080";
+				if (c_head === "father_id_changed" || c_head === "mother_id_changed") { //逆の場合は黒のままにする
+					l_color = "#000000";
+				}
+				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + (c_group["y"] + c_settings["font_size"] / 4) + "\"><tspan style=\"fill: " + l_color + ";\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
 				//仮の婚姻線
 				l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x_2 +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + "\" />";
 				l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + "\" />";
