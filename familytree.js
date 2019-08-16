@@ -185,8 +185,16 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 	}
 	//先に見つからないidのpersonをすべて加えておく
 	for (let i1 = 0; i1 < c_data.length; i1++) {
+		const c_id = c_data[i1]["id"];
 		const c_father_id = c_data[i1]["father_id"];
 		const c_mother_id = c_data[i1]["mother_id"];
+		if (c_id !== null && c_data[i1]["type"] === "adoption") { //探す場合
+			if (c_person_index[c_id] === undefined) { //見つからない場合、加える
+				c_data.push({"type": "person", "id": c_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
+				c_persons.push(c_data[c_data.length - 1]);
+				c_person_index[c_id] = c_persons[c_persons.length - 1];
+			}
+		}
 		if (c_father_id !== null) { //探す場合
 			if (c_person_index[c_father_id] === undefined) { //見つからない場合、加える
 				c_data.push({"type": "person", "id": c_father_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
