@@ -44,7 +44,9 @@ function f_xhr_get(a_url, a_type) {
 async function f_familytree(a_url, a_div_id, a_settings) {
 	//設定
 	const c_settings = a_settings;
-	
+	if (c_settings["descendant"] === undefined) {
+		c_settings["descendant"] = null;
+	}
 	
 	/*
 	const c_settings = {
@@ -63,118 +65,131 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		"length": 12 //横の間隔（文字数で表記）
 	};
 	*/
+	
 	//読み込み
-	const c_data = JSON.parse((await f_xhr_get(a_url, "text")).responseText);
+	const c_data_1 = JSON.parse((await f_xhr_get(a_url, "text")).responseText);
+	//コメント排除
+	const c_data_2 = [];
+	for (let i1 = 0; i1 < c_data_1.length; i1++) {
+		if (c_data_1[i1]["type"] !== "comment") {
+			c_data_2.push(c_data_1[i1]);
+		}
+	}
+	
+	//次に、"descendant"がundefinedでないとき、子孫以外を排除
+	
 	//データの整理
+	
 	//undefinedをnullにそろえる
-	for (let i1 = 0; i1 < c_data.length; i1++) {
+	for (let i1 = 0; i1 < c_data_2.length; i1++) {
 		//typeをそろえる
-		if (c_data[i1]["type"] === undefined || c_data[i1]["type"] === null) {
-			c_data[i1]["type"] = "person";
-		} else if (c_data[i1]["type"] !== "person" && c_data[i1]["type"] !== "marriage" && c_data[i1]["type"] !== "adoption") {
-			c_data[i1]["type"] = "person";
+		if (c_data_2[i1]["type"] === undefined || c_data_2[i1]["type"] === null) {
+			c_data_2[i1]["type"] = "person";
+		} else if (c_data_2[i1]["type"] !== "person" && c_data_2[i1]["type"] !== "marriage" && c_data_2[i1]["type"] !== "adoption") {
+			c_data_2[i1]["type"] = "person";
 		}
 		//husband_idはfather_idに、wife_idはmother_idに統合する
 		//headのみ入力しておき、head_idとother_idは自動入力する
 		//headをfather_idかmother_idにそろえる
-		if (c_data[i1]["head"] === "husband_id") {
-			c_data[i1]["head"] = "father_id";
-		} else if (c_data[i1]["head"] === "wife_id") {
-			c_data[i1]["head"] = "mother_id";
-		} else if (c_data[i1]["head"] === undefined || c_data[i1]["head"] === null) {
-			c_data[i1]["head"] = c_settings["head_id"];
-		} else if (c_data[i1]["head"] !== "father_id" && c_data[i1]["head"] !== "mother_id") {
-			c_data[i1]["head"] = c_settings["head_id"];
+		if (c_data_2[i1]["head"] === "husband_id") {
+			c_data_2[i1]["head"] = "father_id";
+		} else if (c_data_2[i1]["head"] === "wife_id") {
+			c_data_2[i1]["head"] = "mother_id";
+		} else if (c_data_2[i1]["head"] === undefined || c_data_2[i1]["head"] === null) {
+			c_data_2[i1]["head"] = c_settings["head_id"];
+		} else if (c_data_2[i1]["head"] !== "father_id" && c_data_2[i1]["head"] !== "mother_id") {
+			c_data_2[i1]["head"] = c_settings["head_id"];
 		}
 		//father_id、mother_id、husband_id、wife_idをそろえる
-		if (c_data[i1]["father_id"] === undefined) {
-			c_data[i1]["father_id"] = null;
+		if (c_data_2[i1]["father_id"] === undefined) {
+			c_data_2[i1]["father_id"] = null;
 		}
-		if (c_data[i1]["mother_id"] === undefined) {
-			c_data[i1]["mother_id"] = null;
+		if (c_data_2[i1]["mother_id"] === undefined) {
+			c_data_2[i1]["mother_id"] = null;
 		}
-		if (c_data[i1]["husband_id"] === undefined) {
-			c_data[i1]["husband_id"] = null;
+		if (c_data_2[i1]["husband_id"] === undefined) {
+			c_data_2[i1]["husband_id"] = null;
 		}
-		if (c_data[i1]["wife_id"] === undefined) {
-			c_data[i1]["wife_id"] = null;
+		if (c_data_2[i1]["wife_id"] === undefined) {
+			c_data_2[i1]["wife_id"] = null;
 		}
-		if (c_data[i1]["father_id"] === null) {
-			c_data[i1]["father_id"] = c_data[i1]["husband_id"];
+		if (c_data_2[i1]["father_id"] === null) {
+			c_data_2[i1]["father_id"] = c_data_2[i1]["husband_id"];
 		}
-		if (c_data[i1]["mother_id"] === null) {
-			c_data[i1]["mother_id"] = c_data[i1]["wife_id"];
+		if (c_data_2[i1]["mother_id"] === null) {
+			c_data_2[i1]["mother_id"] = c_data_2[i1]["wife_id"];
 		}
 		//head_idとother_idを設定する
-		if (c_data[i1]["head"] === "father_id") {
-			c_data[i1]["head_id"] = c_data[i1]["father_id"];
-			c_data[i1]["other_id"] = c_data[i1]["mother_id"];
-			if (c_data[i1]["head_id"] === null) {
-				c_data[i1]["head_id"] = c_data[i1]["mother_id"];
-				c_data[i1]["other_id"] = c_data[i1]["father_id"];
+		if (c_data_2[i1]["head"] === "father_id") {
+			c_data_2[i1]["head_id"] = c_data_2[i1]["father_id"];
+			c_data_2[i1]["other_id"] = c_data_2[i1]["mother_id"];
+			if (c_data_2[i1]["head_id"] === null) {
+				c_data_2[i1]["head_id"] = c_data_2[i1]["mother_id"];
+				c_data_2[i1]["other_id"] = c_data_2[i1]["father_id"];
 			}
-		} else if (c_data[i1]["head"] === "mother_id") {
-			c_data[i1]["head_id"] = c_data[i1]["mother_id"];
-			c_data[i1]["other_id"] = c_data[i1]["father_id"];
-			if (c_data[i1]["head_id"] === null) {
-				c_data[i1]["head_id"] = c_data[i1]["father_id"];
-				c_data[i1]["other_id"] = c_data[i1]["mother_id"];
+		} else if (c_data_2[i1]["head"] === "mother_id") {
+			c_data_2[i1]["head_id"] = c_data_2[i1]["mother_id"];
+			c_data_2[i1]["other_id"] = c_data_2[i1]["father_id"];
+			if (c_data_2[i1]["head_id"] === null) {
+				c_data_2[i1]["head_id"] = c_data_2[i1]["father_id"];
+				c_data_2[i1]["other_id"] = c_data_2[i1]["mother_id"];
 			}
 		}
 	}
 	
 	//descendantがundefinedかnullでない場合、n番目の子孫をheadにする。
 	//名字の色は未対応
-	if (c_settings["descendant"] !== undefined && c_settings["descendant"] !== null) {
-		const c_descendant_index = {}; //n番目の人物の子孫
-		c_descendant_index[c_data[c_settings["descendant"]]["id"]] = c_data[c_settings["descendant"]]; //n番目の人物を加える（typeがpersonという前提）
+	const c_descendant_index = {}; //n番目の人物の子孫
+	if (c_settings["descendant"] !== null) {
+		c_descendant_index[c_data_2[c_settings["descendant"]]["id"]] = true;//c_data_2[c_settings["descendant"]]; //n番目の人物を加える（typeがpersonという前提）
 		let l_exist_3 = true; //追加がなされたらtrue
 		while (l_exist_3 === true) {
 			l_exist_3 = false;
-			for (let i1 = 0; i1 < c_data.length; i1++) {
-				if (c_data[i1]["type"] === "person") {
-					const c_id = c_data[i1]["id"];
-					const c_father_id = c_data[i1]["father_id"];
-					const c_mother_id = c_data[i1]["mother_id"];
+			for (let i1 = 0; i1 < c_data_2.length; i1++) {
+				if (c_data_2[i1]["type"] === "person") {
+					const c_id = c_data_2[i1]["id"];
+					const c_father_id = c_data_2[i1]["father_id"];
+					const c_mother_id = c_data_2[i1]["mother_id"];
 					if (c_father_id !== null) {
 						if (c_descendant_index[c_father_id] !== undefined && c_descendant_index[c_id] === undefined) {
-							c_descendant_index[c_id] = c_data[i1];
+							c_descendant_index[c_id] = true;//c_data_2[i1];
 							l_exist_3 = true;
 						}
 					}
 					if (c_mother_id !== null) {
 						if (c_descendant_index[c_mother_id] !== undefined && c_descendant_index[c_id] === undefined) {
-							c_descendant_index[c_id] = c_data[i1];
+							c_descendant_index[c_id] = true;//c_data_2[i1];
 							l_exist_3 = true;
 						}
-					} 
+					}
 				}
 			}
 		}
 		//head_idとother_idを変更する
-		for (let i1 = 0; i1 < c_data.length; i1++) {
-			const c_head_id = c_data[i1]["head_id"];
-			const c_other_id = c_data[i1]["other_id"];
+		for (let i1 = 0; i1 < c_data_2.length; i1++) {
+			const c_head_id = c_data_2[i1]["head_id"];
+			const c_other_id = c_data_2[i1]["other_id"];
 			if (c_head_id !== null && c_other_id !== null) { //両方存在（変更可能）
 				if (c_descendant_index[c_head_id] === undefined && c_descendant_index[c_other_id] !== undefined) { //other_idのみが最初の人物の子孫の場合
-					c_data[i1]["head_id"] = c_other_id;
-					c_data[i1]["other_id"] = c_head_id;
-					c_data[i1]["head"] += "_changed";
+					c_data_2[i1]["head_id"] = c_other_id;
+					c_data_2[i1]["other_id"] = c_head_id;
+					c_data_2[i1]["head"] += "_changed";
 				}
 			}
 		}
 	}
+	
 	//分類
 	const c_persons = [];
 	const c_marriages = [];
 	const c_adoptions = [];
-	for (let i1 = 0; i1 < c_data.length; i1++) {
-		if (c_data[i1]["type"] === "person") {
-			c_persons.push(c_data[i1]);
-		} else if (c_data[i1]["type"] === "marriage" && c_data[i1]["father_id"] !== null && c_data[i1]["mother_id"] !== null) { //夫婦のどちらかが欠けるものは除く
-			c_marriages.push(c_data[i1]);
-		} else if (c_data[i1]["type"] === "adoption") {
-			c_adoptions.push(c_data[i1]);
+	for (let i1 = 0; i1 < c_data_2.length; i1++) {
+		if (c_data_2[i1]["type"] === "person") {
+			c_persons.push(c_data_2[i1]);
+		} else if (c_data_2[i1]["type"] === "marriage" && c_data_2[i1]["father_id"] !== null && c_data_2[i1]["mother_id"] !== null) { //夫婦のどちらかが欠けるものは除く
+			c_marriages.push(c_data_2[i1]);
+		} else if (c_data_2[i1]["type"] === "adoption") {
+			c_adoptions.push(c_data_2[i1]);
 		}
 	}
 	
@@ -184,28 +199,28 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		c_person_index[c_persons[i1]["id"]] = c_persons[i1];
 	}
 	//先に見つからないidのpersonをすべて加えておく
-	for (let i1 = 0; i1 < c_data.length; i1++) {
-		const c_id = c_data[i1]["id"];
-		const c_father_id = c_data[i1]["father_id"];
-		const c_mother_id = c_data[i1]["mother_id"];
-		if (c_id !== null && c_data[i1]["type"] === "adoption") { //探す場合
+	for (let i1 = 0; i1 < c_data_2.length; i1++) {
+		const c_id = c_data_2[i1]["id"];
+		const c_father_id = c_data_2[i1]["father_id"];
+		const c_mother_id = c_data_2[i1]["mother_id"];
+		if (c_id !== null && c_data_2[i1]["type"] === "adoption") { //探す場合
 			if (c_person_index[c_id] === undefined) { //見つからない場合、加える
-				c_data.push({"type": "person", "id": c_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
-				c_persons.push(c_data[c_data.length - 1]);
+				c_data_2.push({"type": "person", "id": c_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
+				c_persons.push(c_data_2[c_data_2.length - 1]);
 				c_person_index[c_id] = c_persons[c_persons.length - 1];
 			}
 		}
 		if (c_father_id !== null) { //探す場合
 			if (c_person_index[c_father_id] === undefined) { //見つからない場合、加える
-				c_data.push({"type": "person", "id": c_father_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
-				c_persons.push(c_data[c_data.length - 1]);
+				c_data_2.push({"type": "person", "id": c_father_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
+				c_persons.push(c_data_2[c_data_2.length - 1]);
 				c_person_index[c_father_id] = c_persons[c_persons.length - 1];
 			}
 		}
 		if (c_mother_id !== null) { //探す場合
 			if (c_person_index[c_mother_id] === undefined) { //見つからない場合、加える
-				c_data.push({"type": "person", "id": c_mother_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
-				c_persons.push(c_data[c_data.length - 1]);
+				c_data_2.push({"type": "person", "id": c_mother_id, "father_id": null, "mother_id": null, "head_id": null, "other_id": null});
+				c_persons.push(c_data_2[c_data_2.length - 1]);
 				c_person_index[c_mother_id] = c_persons[c_persons.length - 1];
 			}
 		}
@@ -222,13 +237,13 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 	const c_head_persons = [];
 	
 	//groups作成
-	for (let i1 = 0; i1 < c_data.length; i1++) {
-		const c_type = c_data[i1]["type"];
-		const c_id = c_data[i1]["id"];
-		const c_father_id = c_data[i1]["father_id"];
-		const c_mother_id = c_data[i1]["mother_id"];
-		const c_head_id = c_data[i1]["head_id"];
-		const c_other_id = c_data[i1]["other_id"];
+	for (let i1 = 0; i1 < c_data_2.length; i1++) {
+		const c_type = c_data_2[i1]["type"];
+		const c_id = c_data_2[i1]["id"];
+		const c_father_id = c_data_2[i1]["father_id"];
+		const c_mother_id = c_data_2[i1]["mother_id"];
+		const c_head_id = c_data_2[i1]["head_id"];
+		const c_other_id = c_data_2[i1]["other_id"];
 		if (c_type === "person" && c_head_id === null) { //一番はじめ
 			c_head_persons.push(c_id);
 			continue;
@@ -239,7 +254,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		const c_group_id = f_group_id(c_father_id, c_mother_id, c_head_id, c_other_id);
 		let l_group = c_group_index[c_group_id];
 		if (l_group === undefined) { //ない場合、加える
-			console.log(c_data[i1]);
+			console.log(c_data_2[i1]);
 			const c_groups = c_person_index[c_head_id]["groups"];
 			c_groups.push({"father_id": c_father_id, "mother_id": c_mother_id, "head_id": c_head_id, "other_id": c_other_id, "child_ids": [], "width": null, "marriage": null});
 			c_group_index[c_group_id] = c_groups[c_groups.length - 1];
@@ -422,22 +437,38 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		l_sibling_line_up = c_settings["font_size"] * c_settings["line_height"] / 2;
 	}
 	
+	console.log(c_descendant_index);
 	//線
-	for (let i1 = 0; i1 < c_data.length; i1++) {
-		const c_type = c_data[i1]["type"];
-		const c_father_id = c_data[i1]["father_id"];
-		const c_mother_id = c_data[i1]["mother_id"];
-		const c_head_id = c_data[i1]["head_id"];
-		const c_other_id = c_data[i1]["other_id"];
-		const c_head = c_data[i1]["head"];
+	for (let i1 = 0; i1 < c_data_2.length; i1++) {
+		const c_type = c_data_2[i1]["type"];
+		const c_father_id = c_data_2[i1]["father_id"];
+		const c_mother_id = c_data_2[i1]["mother_id"];
+		const c_head_id = c_data_2[i1]["head_id"];
+		const c_other_id = c_data_2[i1]["other_id"];
+		const c_head = c_data_2[i1]["head"];
+		
+		//子孫のみ表示
+		if (c_settings["descendant"] !== undefined) {
+			if (c_type === "person" || c_type ==="adoption") {
+				if (c_descendant_index[c_data_2[i1]["id"]] === undefined) {
+					continue;
+				}
+			} else if (c_type === "marriage") {
+				if (c_head_id !== null) {
+					if (c_descendant_index[c_head_id] === undefined) {
+						continue;
+					}
+				}
+			}
+		}
 		//head_personと欠けた婚姻は除く
 		if (c_type === "person" && c_head_id === null) { //一番はじめ
 			//名
-			const c_name = c_data[i1]["id"].split("_");
+			const c_name = c_data_2[i1]["id"].split("_");
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}
-			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" +c_data[i1]["x"] + "\" y=\"" + (c_data[i1]["y"] + c_settings["font_size"] / 4) + "\">" + c_name[0] + " " + c_name[1] + "</text>";
+			l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" +c_data_2[i1]["x"] + "\" y=\"" + (c_data_2[i1]["y"] + c_settings["font_size"] / 4) + "\">" + c_name[0] + " " + c_name[1] + "</text>";
 			continue;
 		}
 		if (c_type === "marriage" && (c_father_id === null || c_mother_id === null)) { //片方ない婚姻
@@ -447,19 +478,19 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		const c_group = c_group_index[c_group_id];
 		//generationの計算
 		if (c_type === "marriage" || c_type === "adoption") {
-			c_data[i1]["generation"] = c_group["generation"];
+			c_data_2[i1]["generation"] = c_group["generation"];
 		}
-		const c_generation = c_data[i1]["generation"] - 1;
+		const c_generation = c_data_2[i1]["generation"] - 1;
 		const c_group_line_order = c_group["group_line_order"];
 		const c_group_x = c_generation * c_settings["length"] * c_settings["font_size"] + c_settings["text_length"] * c_settings["font_size"] + c_settings["left_offset"] + c_group_line_order * c_settings["line_space"];
 		//xyの計算
 		if (c_type === "adoption") {
-			const c_id = c_data[i1]["id"];
-			c_data[i1]["x"] = c_person_index[c_id]["x"];
-			c_data[i1]["y"] = c_person_index[c_id]["y"];
+			const c_id = c_data_2[i1]["id"];
+			c_data_2[i1]["x"] = c_person_index[c_id]["x"];
+			c_data_2[i1]["y"] = c_person_index[c_id]["y"];
 		}
-		const c_x = c_data[i1]["x"]; //undefinedかもしれない
-		const c_y = c_data[i1]["y"]; //undefinedかもしれない
+		const c_x = c_data_2[i1]["x"]; //undefinedかもしれない
+		const c_y = c_data_2[i1]["y"]; //undefinedかもしれない
 		//fatherやmotherはnullかもしれない
 		let l_father;
 		let l_mother;
@@ -528,7 +559,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				}
 			}
 			//名
-			const c_name = c_data[i1]["id"].split("_");
+			const c_name = c_data_2[i1]["id"].split("_");
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}

@@ -1,5 +1,6 @@
 [
 	{"id": "中臣_可多能祜", "father_id": null, "mother_id": null, "sex": "male"},
+	{"type": "comment", "comment": "test"},
 	{"id": "中臣_御食子", "father_id": "中臣_可多能祜", "mother_id": "那爾毛古娘", "sex": "female"},
 	{"id": "中臣_国子", "father_id": "中臣_可多能祜", "mother_id": null, "sex": "male"},
 	{"id": "中臣_国足", "father_id": "中臣_国子", "mother_id": null, "sex": "male"},
