@@ -312,6 +312,14 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 			} else if (c_settings["one_per_row"] === true && l_width !== null) {
 				l_width += 1; //親の分をずらす
 			}
+			
+			//非表示の幅は0にする
+			if (c_settings["descendant"] !== null) {
+				if(c_descendant_index[c_persons[i1]["id"]] === undefined) {
+					l_width = 0;
+				}
+			}
+			
 			c_persons[i1]["width"] = l_width;
 		}
 	}
