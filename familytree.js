@@ -177,6 +177,24 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				}
 			}
 		}
+		//養親を追加
+		for (let i1 = 0; i1 < c_data_2.length; i1++) {
+			if (c_data_2[i1]["type"] === "adoption") {
+				const c_id = c_data_2[i1]["id"];
+				const c_father_id = c_data_2[i1]["father_id"];
+				const c_mother_id = c_data_2[i1]["mother_id"];
+				if (c_father_id !== null) {
+					if (c_descendant_index[c_father_id] === undefined && c_descendant_index[c_id] !== undefined) {
+						c_descendant_index[c_father_id] = true;//c_data_2[i1];
+					}
+				}
+				if (c_mother_id !== null) {
+					if (c_descendant_index[c_mother_id] === undefined && c_descendant_index[c_id] !== undefined) {
+						c_descendant_index[c_mother_id] = true;//c_data_2[i1];
+					}
+				}
+			}
+		}
 	}
 	
 	//分類
