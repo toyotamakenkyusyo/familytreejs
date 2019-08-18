@@ -467,6 +467,13 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		l_sibling_line_up = c_settings["font_size"] * c_settings["line_height"] / 2;
 	}
 	
+	let l_mother_line_color = "#FF0000";
+	let l_father_line_color = "#0000FF";
+	if (c_settings["descendant"] !== null) {
+		l_mother_line_color = "#000000";
+		l_father_line_color = "#000000";
+	}
+	
 	console.log(c_descendant_index);
 	//線
 	for (let i1 = 0; i1 < c_data_2.length; i1++) {
@@ -556,8 +563,8 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		
 		if (c_type === "marriage") { //婚姻線と仮の名
 			if (c_settings["show_standard_line"] === true) {
-				l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
-				l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
+				l_marriage_line += "<path style=\"stroke: " + l_father_line_color + ";\" d=\"M " + c_father_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_mother_y + "\" />";
+				l_marriage_line += "<path style=\"stroke: " + l_mother_line_color + ";\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_father_y + "\" />";
 			}
 			if (c_settings["show_other_parent"] === true) {
 				//仮の名
@@ -571,8 +578,8 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				}
 				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + (c_group["y"] + c_settings["font_size"] / 4) + "\"><tspan style=\"fill: " + l_color + ";\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
 				//仮の婚姻線
-				l_marriage_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x_2 +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + "\" />";
-				l_marriage_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + "\" />";
+				l_marriage_line += "<path style=\"stroke: " + l_father_line_color + ";\" d=\"M " + c_father_x_2 +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + "\" />";
+				l_marriage_line += "<path style=\"stroke: " + l_mother_line_color + ";\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + "\" />";
 			}
 		} else if (c_type === "person") { //親子線と名
 			//一番最初の人
@@ -582,10 +589,10 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 			const c_sibling_x = c_x - c_settings["right_offset"];
 			if (c_settings["show_standard_line"] === true) {
 				if (c_father_id !== null) {
-					l_parent_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+					l_parent_line += "<path style=\"stroke: " + l_father_line_color + ";\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 				}
 				if (c_mother_id !== null) {
-					l_parent_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+					l_parent_line += "<path style=\"stroke: " + l_mother_line_color + ";\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 				}
 			}
 			//名
@@ -597,18 +604,18 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 			if (c_settings["show_other_parent"] === true) {
 				//仮の親子線
 				if (c_father_id !== null) {
-					l_parent_line += "<path style=\"stroke: #0000FF;\" d=\"M " + c_father_x_2 + ", " +c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+					l_parent_line += "<path style=\"stroke: " + l_father_line_color + ";\" d=\"M " + c_father_x_2 + ", " +c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 				}
 				if (c_mother_id !== null) {
-					l_parent_line += "<path style=\"stroke: #FF0000;\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+					l_parent_line += "<path style=\"stroke: " + l_mother_line_color + ";\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_group_y + " L " + c_sibling_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 				}
 			}
 		} else if (c_type === "adoption") { //養子線
 			if (c_father_id !== null) {
-				l_adoption_line += "<path style=\"stroke: #0000FF; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+				l_adoption_line += "<path style=\"stroke: " + l_father_line_color + "; stroke-dasharray: 4px;\" d=\"M " + c_father_x + ", " +c_father_y + " L " + c_group_x +  ", " + c_father_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 			}
 			if (c_mother_id !== null) {
-				l_adoption_line += "<path style=\"stroke: #FF0000; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
+				l_adoption_line += "<path style=\"stroke: " + l_mother_line_color + "; stroke-dasharray: 4px;\" d=\"M " + c_mother_x + ", " +c_mother_y + " L " + c_group_x +  ", " + c_mother_y + " L " + c_group_x +  ", " + c_y + " L " + c_x +  ", " + c_y + "\" />";
 			}
 		}
 	}
