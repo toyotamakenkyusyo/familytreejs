@@ -478,7 +478,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		const c_head = c_data_2[i1]["head"];
 		
 		//子孫のみ表示
-		if (c_settings["descendant"] !== undefined) {
+		if (c_settings["descendant"] !== null) {
 			if (c_type === "person" || c_type ==="adoption") {
 				if (c_descendant_index[c_data_2[i1]["id"]] === undefined) {
 					continue;
