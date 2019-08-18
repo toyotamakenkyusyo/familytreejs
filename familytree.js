@@ -44,7 +44,7 @@ function f_xhr_get(a_url, a_type) {
 async function f_familytree(a_url, a_div_id, a_settings) {
 	//設定
 	const c_settings = a_settings;
-	if (c_settings["descendant"] === undefined) {
+	if (c_settings["descendant"] === undefined || c_settings["descendant"] === true || c_settings["descendant"] === false) {
 		c_settings["descendant"] = null;
 	}
 	
@@ -141,7 +141,11 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 	//名字の色は未対応
 	const c_descendant_index = {}; //n番目の人物の子孫
 	if (c_settings["descendant"] !== null) {
-		c_descendant_index[c_data_2[c_settings["descendant"]]["id"]] = true;//c_data_2[c_settings["descendant"]]; //n番目の人物を加える（typeがpersonという前提）
+		if (isNaN(c_settings["descendant"])) { //テキストの場合（id）
+			c_descendant_index[c_settings["descendant"]] = true;
+		} else { //数値の場合
+			c_descendant_index[c_data_2[c_settings["descendant"]]["id"]] = true;//n番目の人物を加える（typeがpersonという前提）
+		}
 		let l_exist_3 = true; //追加がなされたらtrue
 		while (l_exist_3 === true) {
 			l_exist_3 = false;
@@ -152,13 +156,13 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 					const c_mother_id = c_data_2[i1]["mother_id"];
 					if (c_father_id !== null) {
 						if (c_descendant_index[c_father_id] !== undefined && c_descendant_index[c_id] === undefined) {
-							c_descendant_index[c_id] = true;//c_data_2[i1];
+							c_descendant_index[c_id] = true;
 							l_exist_3 = true;
 						}
 					}
 					if (c_mother_id !== null) {
 						if (c_descendant_index[c_mother_id] !== undefined && c_descendant_index[c_id] === undefined) {
-							c_descendant_index[c_id] = true;//c_data_2[i1];
+							c_descendant_index[c_id] = true;
 							l_exist_3 = true;
 						}
 					}
@@ -185,12 +189,12 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				const c_mother_id = c_data_2[i1]["mother_id"];
 				if (c_father_id !== null) {
 					if (c_descendant_index[c_father_id] === undefined && c_descendant_index[c_id] !== undefined) {
-						c_descendant_index[c_father_id] = true;//c_data_2[i1];
+						c_descendant_index[c_father_id] = true;
 					}
 				}
 				if (c_mother_id !== null) {
 					if (c_descendant_index[c_mother_id] === undefined && c_descendant_index[c_id] !== undefined) {
-						c_descendant_index[c_mother_id] = true;//c_data_2[i1];
+						c_descendant_index[c_mother_id] = true;
 					}
 				}
 			}
