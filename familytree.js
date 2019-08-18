@@ -576,7 +576,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				if (c_head === "father_id_changed" || c_head === "mother_id_changed") { //逆の場合は黒のままにする
 					l_color = "#000000";
 				}
-				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + (c_group["y"] + c_settings["font_size"] / 4) + "\"><tspan style=\"fill: " + l_color + ";\">" + c_name[0] + "</tspan> " + c_name[1] + "</text>";
+				l_texts += "<text style=\"font-size: " + c_settings["font_size"] + "px;\" x=\"" + c_group["x"] + "\" y=\"" + (c_group["y"] + c_settings["font_size"] / 4) + "\"><tspan style=\"fill: " + l_color + ";\">" + c_name[0] + "</tspan><tspan> </tspan><tspan>" + c_name[1] + "</tspan></text>";
 				//仮の婚姻線
 				l_marriage_line += "<path style=\"stroke: " + l_father_line_color + ";\" d=\"M " + c_father_x_2 +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + "\" />";
 				l_marriage_line += "<path style=\"stroke: " + l_mother_line_color + ";\" d=\"M " + c_mother_x_2 + ", " +c_mother_y_2 + " L " + c_group_x +  ", " + c_mother_y_2 + " L " + c_group_x +  ", " + c_father_y_2 + "\" />";
