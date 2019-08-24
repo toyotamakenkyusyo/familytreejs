@@ -501,7 +501,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 		//head_personと欠けた婚姻は除く
 		if (c_type === "person" && c_head_id === null) { //一番はじめ
 			//名
-			const c_name = c_data_2[i1]["id"].split("_");
+			const c_name = c_data_2[i1]["id"].replace(/？/g, "　　").split("_");
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}
@@ -568,7 +568,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 			}
 			if (c_settings["show_other_parent"] === true) {
 				//仮の名
-				const c_name = c_other_id.split("_");
+				const c_name = c_other_id.replace(/？/g, "　　").split("_");
 				if (c_name[1] === undefined) {
 					c_name[1] = "";
 				}
@@ -596,7 +596,7 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 				}
 			}
 			//名
-			const c_name = c_data_2[i1]["id"].split("_");
+			const c_name = c_data_2[i1]["id"].replace(/？/g, "　　").split("_");
 			if (c_name[1] === undefined) {
 				c_name[1] = "";
 			}
