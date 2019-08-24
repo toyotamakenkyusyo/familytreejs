@@ -411,6 +411,10 @@ async function f_familytree(a_url, a_div_id, a_settings) {
 						l_parent_generation = c_mother_generation;
 					}
 				}
+				//子孫のみ表示の場合
+				if (c_settings["descendant"] !== null) {
+					l_parent_generation = c_person_index[c_groups[i2]["head_id"]]["generation"];
+				}
 				c_groups[i2]["generation"] = l_parent_generation + 1;
 				for (let i3 = 0; i3 < c_groups[i2]["child_ids"].length; i3++) {
 					const c_child_id = c_groups[i2]["child_ids"][i3];
